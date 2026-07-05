@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>内网监控面板</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #edf2f7;
+            --panel: #ffffff;
+            --panel-soft: #f8fafc;
+            --border: #d7dee8;
+            --text: #0f172a;
+            --muted: #64748b;
+            --accent: #0f766e;
+            --accent-2: #f59e0b;
+            --good: #15803d;
+            --warn: #b45309;
+            --bad: #b91c1c;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 32%),
+                radial-gradient(circle at top right, rgba(245, 158, 11, 0.18), transparent 28%),
+                linear-gradient(180deg, #f8fbfc 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: "Segoe UI", "PingFang SC", sans-serif;
+            min-height: 100vh;
+            overflow-y: scroll;
+        }
+
+        .container-wide {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 32px 20px 48px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 24px;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.12);
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            margin: 12px 0 8px;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 760px;
+        }
+
+        .card-shell {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            height: 100%;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .stat-footnote {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .section-card {
+            padding: 20px;
+            height: 100%;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 12px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .subtle {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+        }
+
+        .table thead th {
+            color: var(--muted);
+            font-weight: 600;
+            border-bottom-color: var(--border);
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            border-bottom-color: rgba(215, 222, 232, 0.7);
+        }
+
+        .device-row {
+            cursor: pointer;
+            transition: background 160ms ease;
+        }
+
+        .device-row:hover {
+            background: rgba(15, 118, 110, 0.06);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-online {
+            background: rgba(21, 128, 61, 0.12);
+            color: var(--good);
+        }
+
+        .status-offline {
+            background: rgba(185, 28, 28, 0.12);
+            color: var(--bad);
+        }
+
+        .metric-bar {
+            height: 7px;
+            border-radius: 999px;
+            background: #e5edf5;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .metric-bar span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        }
+
+        .alert-item {
+            border: 1px solid var(--border);
+            background: var(--panel-soft);
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 10px;
+        }
+
+        .alert-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .alert-title {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .mini-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .mini-stat {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 14px;
+            background: var(--panel-soft);
+        }
+
+        .mini-stat-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .mini-stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .detail-line {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .detail-line span:first-child {
+            color: var(--muted);
+        }
+
+        .drawer-note {
+            white-space: pre-wrap;
+            color: var(--text);
+            min-height: 72px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .device-table-wrap {
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        .list-panel {
+            min-height: 260px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .trend-panel {
+            height: 340px;
+        }
+
+        .trend-panel canvas {
+            width: 100% !important;
+            height: 260px !important;
+            display: block;
+        }
+
+        .drawer-chart-wrap {
+            height: 240px;
+        }
+
+        .drawer-chart-wrap canvas {
+            width: 100% !important;
+            height: 200px !important;
+            display: block;
+        }
+
+        @media (max-width: 991px) {
+            .control-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .mini-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .hero {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .control-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mini-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-value {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container-wide">
+    <div class="hero">
+        <div>
+            <span class="hero-tag">Network Monitor</span>
+            <h1>内网设备监控面板</h1>
+            <p>实时查看延迟、CPU、内存、异常告警，并为关键设备添加别名与备注。</p>
+        </div>
+            <a href="/switches" class="btn btn-outline-primary" style="text-decoration: none;">
+        <i class="bi bi-cpu"></i> 交换机监控
+            </a>
+        <div class="toolbar-actions">
+            <a class="btn btn-outline-secondary" href="/api/export.csv" target="_blank">导出全部 CSV</a>
+            <button class="btn btn-outline-secondary" id="toggleAutoRefresh">暂停实时刷新</button>
+            <button class="btn btn-outline-secondary" id="refreshNow">立即刷新</button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card-shell stat-card">
+                <div class="stat-label">监控设备数</div>
+                <div class="stat-value" id="deviceCount">0</div>
+                <div class="stat-footnote">最后更新 <span id="lastUpdate">--</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-shell stat-card">
+                <div class="stat-label">在线 / 离线</div>
+                <div class="stat-value"><span id="onlineCount">0</span> / <span id="offlineCount">0</span></div>
+                <div class="stat-footnote">在线率 <span id="uptimeRate">0%</span></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-shell stat-card">
+                <div class="stat-label">平均 CPU / 内存</div>
+                <div class="stat-value"><span id="avgCPU">0</span>% / <span id="avgMemory">0</span>%</div>
+                <div class="stat-footnote">平均延迟 <span id="avgDelay">0</span> ms</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-shell stat-card">
+                <div class="stat-label">当前异常数</div>
+                <div class="stat-value" id="anomalyCount">0</div>
+                <div class="stat-footnote">历史告警 <span id="alertHistoryCount">0</span> 条</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card-shell section-card">
+                <div class="section-head">
+                    <div>
+                        <h2>设备列表</h2>
+                        <div class="subtle">支持搜索、状态筛选、排序和单设备导出。</div>
+                    </div>
+                </div>
+                <div class="control-grid mb-3">
+                    <input class="form-control" id="searchInput" placeholder="搜索 IP、别名、备注">
+                    <select class="form-select" id="statusFilter">
+                        <option value="all">全部状态</option>
+                        <option value="online">仅在线</option>
+                        <option value="offline">仅离线</option>
+                        <option value="anomaly">仅异常</option>
+                    </select>
+                    <select class="form-select" id="sortBy">
+                        <option value="ip">按 IP 排序</option>
+                        <option value="delay_desc">按延迟降序</option>
+                        <option value="cpu_desc">按 CPU 降序</option>
+                        <option value="memory_desc">按内存降序</option>
+                        <option value="label">按名称排序</option>
+                    </select>
+                    <button class="btn btn-outline-secondary" id="clearFilters">清空筛选</button>
+                </div>
+                <div class="table-wrap device-table-wrap">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>设备</th>
+                            <th>CPU</th>
+                            <th>内存</th>
+                            <th>延迟</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                            <th>导出</th>
+                        </tr>
+                        </thead>
+                        <tbody id="deviceTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card-shell section-card">
+                <div class="section-head">
+                    <div>
+                        <h2>告警历史</h2>
+                        <div class="subtle">最近触发的异常记录。</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" id="refreshAlerts">刷新</button>
+                </div>
+                <div id="alertList" class="subtle list-panel">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card-shell section-card trend-panel">
+                <div class="section-head">
+                    <div>
+                        <h2>整体趋势</h2>
+                        <div class="subtle">最近轮询周期的平均延迟、CPU、内存走势。</div>
+                    </div>
+                </div>
+                <canvas id="trafficChart"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card-shell section-card">
+                <div class="section-head">
+                    <div>
+                        <h2>告警阈值</h2>
+                        <div class="subtle">修改后立即生效。</div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">延迟阈值 (ms)</label>
+                    <input id="ruleDelay" type="number" min="1" max="2000" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">CPU 阈值 (%)</label>
+                    <input id="ruleCPU" type="number" min="1" max="100" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">内存阈值 (%)</label>
+                    <input id="ruleMemory" type="number" min="1" max="100" class="form-control">
+                </div>
+                <button id="applyRules" class="btn btn-primary w-100">应用阈值</button>
+                <div id="rulesHint" class="subtle mt-2">阈值尚未修改。</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-12">
+            <div class="card-shell section-card">
+                <div class="section-head">
+                    <div>
+                        <h2>手动设备</h2>
+                        <div class="subtle">添加固定监控 IP，不依赖自动扫描；不会覆盖历史面板。</div>
+                    </div>
+                </div>
+                <div class="control-grid mb-3">
+                    <input class="form-control" id="manualIpInput" placeholder="例如 192.168.1.10">
+                    <button class="btn btn-primary" id="addManualDeviceBtn">添加</button>
+                    <div id="manualDeviceHint" class="subtle d-flex align-items-center">--</div>
+                    <div></div>
+                </div>
+                <div id="manualDeviceList" class="subtle list-panel">加载中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="deviceDrawer">
+    <div class="offcanvas-header">
+        <div>
+            <h5 class="offcanvas-title" id="drawerTitle">设备详情</h5>
+            <div class="subtle" id="drawerSubtitle">--</div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="mini-stats mb-3">
+            <div class="mini-stat">
+                <div class="mini-stat-label">平均延迟</div>
+                <div class="mini-stat-value" id="statAvgDelay">0</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-label">平均 CPU</div>
+                <div class="mini-stat-value" id="statAvgCPU">0</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-label">平均内存</div>
+                <div class="mini-stat-value" id="statAvgMemory">0</div>
+            </div>
+            <div class="mini-stat">
+                <div class="mini-stat-label">在线率</div>
+                <div class="mini-stat-value" id="statUptime">0</div>
+            </div>
+        </div>
+
+        <div class="card-shell section-card mb-3">
+            <div class="section-head">
+                <div>
+                    <h2>当前状态</h2>
+                    <div class="subtle">设备实时信息。</div>
+                </div>
+                <a class="btn btn-sm btn-outline-secondary" id="drawerExportBtn" target="_blank">导出该设备 CSV</a>
+            </div>
+            <div class="detail-line"><span>状态</span><strong id="drawerState">--</strong></div>
+            <div class="detail-line"><span>最后在线</span><strong id="drawerLastSeen">--</strong></div>
+            <div class="detail-line"><span>离线开始时间</span><strong id="drawerOfflineSince">--</strong></div>
+            <div class="detail-line"><span>离线次数</span><strong id="drawerOfflineEvents">0</strong></div>
+            <div class="detail-line"><span>最近异常</span><strong id="drawerLastAnomaly">--</strong></div>
+        </div>
+
+        <div class="card-shell section-card mb-3">
+            <div class="section-head">
+                <div>
+                    <h2>名称与备注</h2>
+                    <div class="subtle">用于标记关键设备。</div>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">设备别名</label>
+                <input id="drawerAlias" class="form-control" placeholder="例如：核心交换机">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">设备备注</label>
+                <textarea id="drawerNoteInput" class="form-control" rows="4" placeholder="记录设备位置、用途、负责人等"></textarea>
+            </div>
+            <button class="btn btn-primary w-100" id="saveMetadataBtn">保存别名与备注</button>
+            <div id="drawerSaveHint" class="subtle mt-2">--</div>
+        </div>
+
+        <div class="card-shell section-card mb-3">
+            <div class="section-head">
+                <div>
+                    <h2>最近异常</h2>
+                    <div class="subtle">显示最近几次异常记录。</div>
+                </div>
+            </div>
+            <div id="drawerAnomalies" class="drawer-note">--</div>
+        </div>
+
+        <div class="card-shell section-card">
+            <div class="section-head">
+                <div>
+                    <h2>历史曲线</h2>
+                    <div class="subtle">最近 20 个采样点。</div>
+                </div>
+            </div>
+            <div class="drawer-chart-wrap">
+                <canvas id="deviceChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let chart;
+let deviceChart;
+let historyLabels = [];
+let historyDelay = [];
+let historyCPU = [];
+let historyMemory = [];
+let tick = 0;
+let currentData = [];
+let currentAlerts = [];
+let currentDeviceIp = null;
+let currentManualDevices = [];
+const POLL_INTERVAL_MS = 5000;
+const ALERT_POLL_INTERVAL_MS = 15000;
+let autoRefreshEnabled = true;
+let statusTimerId = null;
+let alertsTimerId = null;
+
+function formatTs(ts) {
+    if (!ts) return "--";
+    return new Date(ts * 1000).toLocaleString();
+}
+
+function asNumber(value) {
+    return typeof value === "number" ? value : 0;
+}
+
+function applyFilters(data) {
+    const query = document.getElementById("searchInput").value.trim().toLowerCase();
+    const statusFilter = document.getElementById("statusFilter").value;
+    const sortBy = document.getElementById("sortBy").value;
+
+    let rows = data.filter(item => {
+        const haystack = [item.ip, item.alias, item.note, item.label].join(" ").toLowerCase();
+        if (query && !haystack.includes(query)) return false;
+        if (statusFilter === "online" && !item.online) return false;
+        if (statusFilter === "offline" && item.online) return false;
+        if (statusFilter === "anomaly" && item.anomalies.length === 0) return false;
+        return true;
+    });
+
+    rows.sort((a, b) => {
+        if (sortBy === "delay_desc") return asNumber(b.delay) - asNumber(a.delay);
+        if (sortBy === "cpu_desc") return asNumber(b.cpu) - asNumber(a.cpu);
+        if (sortBy === "memory_desc") return asNumber(b.memory) - asNumber(a.memory);
+        if (sortBy === "label") return (a.label || "").localeCompare(b.label || "", "zh-CN");
+        return a.ip.localeCompare(b.ip, "en");
+    });
+
+    return rows;
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById("deviceTable");
+    const rows = applyFilters(data);
+    if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">没有匹配的设备</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map(d => `
+        <tr class="device-row" data-ip="${d.ip}">
+            <td>
+                <div><strong>${d.label}</strong></div>
+                <div class="subtle">${d.ip}</div>
+            </td>
+            <td>
+                <div class="metric-bar"><span style="width:${Math.min(asNumber(d.cpu), 100)}%"></span></div>
+                ${asNumber(d.cpu).toFixed(2)}%
+            </td>
+            <td>
+                <div class="metric-bar"><span style="width:${Math.min(asNumber(d.memory), 100)}%"></span></div>
+                ${asNumber(d.memory).toFixed(2)}%
+            </td>
+            <td>${d.delay !== null ? `${asNumber(d.delay).toFixed(2)} ms` : "离线"}</td>
+            <td>
+                <span class="status-pill ${d.online ? "status-online" : "status-offline"}">
+                    ${d.online ? "在线" : "离线"}
+                </span>
+            </td>
+            <td>${d.note ? d.note.replace(/</g, "&lt;") : '<span class="text-muted">--</span>'}</td>
+            <td>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-secondary" href="/api/export.csv?ip=${encodeURIComponent(d.ip)}" target="_blank">CSV</a>
+                    ${d.manual ? `<button class="btn btn-sm btn-outline-danger remove-manual-device" data-ip="${d.ip}">删除</button>` : ""}
+                </div>
+            </td>
+        </tr>
+    `).join("");
+}
+
+function renderManualDevices(devices) {
+    const container = document.getElementById("manualDeviceList");
+    if (!devices.length) {
+        container.innerHTML = `<div class="text-muted">还没有手动添加的设备。</div>`;
+        return;
+    }
+    container.innerHTML = devices.map(item => `
+        <div class="alert-item">
+            <div class="alert-title">
+                <strong>${item.label}</strong>
+                <button class="btn btn-sm btn-outline-danger remove-manual-device" data-ip="${item.ip}">删除</button>
+            </div>
+            <div class="subtle">${item.ip}</div>
+        </div>
+    `).join("");
+}
+
+function renderAlerts(alerts) {
+    const container = document.getElementById("alertList");
+    document.getElementById("alertHistoryCount").innerText = alerts.length;
+    if (!alerts.length) {
+        container.innerHTML = `<div class="text-success">最近没有异常告警。</div>`;
+        return;
+    }
+
+    container.innerHTML = alerts.map(alert => `
+        <div class="alert-item">
+            <div class="alert-title">
+                <strong>${alert.label}</strong>
+                <span class="subtle">${alert.timestamp}</span>
+            </div>
+            <div class="subtle mb-1">${alert.ip}</div>
+            <div>${alert.anomalies.join(" / ")}</div>
+            <div class="subtle mt-2">延迟 ${alert.delay ?? "--"} ms | CPU ${alert.cpu ?? "--"}% | 内存 ${alert.memory ?? "--"}%</div>
+        </div>
+    `).join("");
+}
+
+function updateSummary(data) {
+    const online = data.filter(item => item.online);
+    const anomalyCount = data.reduce((sum, item) => sum + item.anomalies.length, 0);
+    const avgDelay = online.length ? online.reduce((sum, item) => sum + asNumber(item.delay), 0) / online.length : 0;
+    const avgCPU = online.length ? online.reduce((sum, item) => sum + asNumber(item.cpu), 0) / online.length : 0;
+    const avgMemory = online.length ? online.reduce((sum, item) => sum + asNumber(item.memory), 0) / online.length : 0;
+    const offline = data.length - online.length;
+
+    document.getElementById("deviceCount").innerText = data.length;
+    document.getElementById("onlineCount").innerText = online.length;
+    document.getElementById("offlineCount").innerText = offline;
+    document.getElementById("uptimeRate").innerText = data.length ? `${((online.length / data.length) * 100).toFixed(1)}%` : "0%";
+    document.getElementById("avgDelay").innerText = avgDelay.toFixed(2);
+    document.getElementById("avgCPU").innerText = avgCPU.toFixed(2);
+    document.getElementById("avgMemory").innerText = avgMemory.toFixed(2);
+    document.getElementById("anomalyCount").innerText = anomalyCount;
+    document.getElementById("lastUpdate").innerText = new Date().toLocaleTimeString();
+
+    historyLabels.push(`T${tick++}`);
+    historyDelay.push(avgDelay.toFixed(2));
+    historyCPU.push(avgCPU.toFixed(2));
+    historyMemory.push(avgMemory.toFixed(2));
+    if (historyLabels.length > 12) {
+        historyLabels.shift();
+        historyDelay.shift();
+        historyCPU.shift();
+        historyMemory.shift();
+    }
+    drawChart();
+}
+
+function drawChart() {
+    if (!chart) {
+        chart = new Chart(document.getElementById("trafficChart"), {
+            type: "line",
+            data: {
+                labels: historyLabels,
+                datasets: [
+                    { label: "平均延迟 (ms)", data: historyDelay, tension: 0.35, borderColor: "#0f766e", backgroundColor: "rgba(15, 118, 110, 0.12)", fill: true },
+                    { label: "平均 CPU (%)", data: historyCPU, tension: 0.35, borderColor: "#1d4ed8", fill: false },
+                    { label: "平均内存 (%)", data: historyMemory, tension: 0.35, borderColor: "#f59e0b", fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false
+            }
+        });
+        return;
+    }
+
+    chart.data.labels = [...historyLabels];
+    chart.data.datasets[0].data = [...historyDelay];
+    chart.data.datasets[1].data = [...historyCPU];
+    chart.data.datasets[2].data = [...historyMemory];
+    chart.update("none");
+}
+
+function drawDeviceChart(samples) {
+    const labels = samples.map(s => new Date(s.ts * 1000).toLocaleTimeString());
+    const delays = samples.map(s => s.delay ?? 0);
+    const cpus = samples.map(s => s.cpu ?? 0);
+    const memories = samples.map(s => s.memory ?? 0);
+
+    if (!deviceChart) {
+        deviceChart = new Chart(document.getElementById("deviceChart"), {
+            type: "line",
+            data: {
+                labels,
+                datasets: [
+                    { label: "延迟 (ms)", data: delays, borderColor: "#0f766e", backgroundColor: "rgba(15, 118, 110, 0.12)", fill: true, tension: 0.35 },
+                    { label: "CPU (%)", data: cpus, borderColor: "#1d4ed8", fill: false, tension: 0.35 },
+                    { label: "内存 (%)", data: memories, borderColor: "#f59e0b", fill: false, tension: 0.35 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false
+            }
+        });
+        return;
+    }
+
+    deviceChart.data.labels = labels;
+    deviceChart.data.datasets[0].data = delays;
+    deviceChart.data.datasets[1].data = cpus;
+    deviceChart.data.datasets[2].data = memories;
+    deviceChart.update("none");
+}
+
+function loadData() {
+    fetch("/api/status")
+        .then(res => res.json())
+        .then(data => {
+            currentData = data;
+            updateSummary(data);
+            renderTable(data);
+            if (currentDeviceIp) {
+                loadDevice(currentDeviceIp, false);
+            }
+        });
+}
+
+function loadAlerts() {
+    fetch("/api/alerts?limit=12")
+        .then(res => res.json())
+        .then(data => {
+            currentAlerts = data;
+            renderAlerts(data);
+        });
+}
+
+function loadManualDevices() {
+    fetch("/api/manual-devices")
+        .then(res => res.json())
+        .then(data => {
+            currentManualDevices = data;
+            renderManualDevices(data);
+        });
+}
+
+function loadDevice(ip, openDrawer = true) {
+    fetch(`/api/device/${ip}`)
+        .then(res => res.json())
+        .then(data => {
+            currentDeviceIp = ip;
+            document.getElementById("drawerTitle").innerText = data.label || data.ip;
+            document.getElementById("drawerSubtitle").innerText = data.ip;
+            document.getElementById("drawerState").innerText = data.current && data.current.online ? "在线" : "离线";
+            document.getElementById("drawerLastSeen").innerText = formatTs(data.last_seen);
+            document.getElementById("drawerOfflineSince").innerText = formatTs(data.offline_since);
+            document.getElementById("drawerOfflineEvents").innerText = data.stats.offline_events;
+            document.getElementById("drawerLastAnomaly").innerText = data.stats.last_anomaly || "--";
+            document.getElementById("drawerAlias").value = data.alias || "";
+            document.getElementById("drawerNoteInput").value = data.note || "";
+            document.getElementById("drawerSaveHint").innerText = "准备保存";
+            document.getElementById("drawerExportBtn").href = `/api/export.csv?ip=${encodeURIComponent(data.ip)}`;
+
+            document.getElementById("statAvgDelay").innerText = `${data.stats.avg_delay} ms`;
+            document.getElementById("statAvgCPU").innerText = `${data.stats.avg_cpu}%`;
+            document.getElementById("statAvgMemory").innerText = `${data.stats.avg_memory}%`;
+            document.getElementById("statUptime").innerText = `${data.stats.uptime_percent}%`;
+
+            const anomalyLines = data.history
+                .filter(item => item.anomalies && item.anomalies.length)
+                .slice(-5)
+                .reverse()
+                .map(item => `${new Date(item.ts * 1000).toLocaleTimeString()} - ${item.anomalies.join(" / ")}`);
+            document.getElementById("drawerAnomalies").innerText = anomalyLines.length ? anomalyLines.join("\n") : "最近没有异常。";
+
+            drawDeviceChart(data.history.slice(-20));
+            if (openDrawer) {
+                bootstrap.Offcanvas.getOrCreateInstance(document.getElementById("deviceDrawer")).show();
+            }
+        });
+}
+
+function saveMetadata() {
+    if (!currentDeviceIp) return;
+    const payload = {
+        alias: document.getElementById("drawerAlias").value,
+        note: document.getElementById("drawerNoteInput").value
+    };
+    fetch(`/api/device/${encodeURIComponent(currentDeviceIp)}/metadata`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById("drawerSaveHint").innerText = "保存成功";
+            loadData();
+            loadAlerts();
+            loadDevice(currentDeviceIp, false);
+        });
+}
+
+function addManualDevice() {
+    const ip = document.getElementById("manualIpInput").value.trim();
+    if (!ip) return;
+    fetch("/api/manual-devices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ip })
+    })
+        .then(async res => ({ ok: res.ok, body: await res.json() }))
+        .then(result => {
+            if (!result.ok) {
+                document.getElementById("manualDeviceHint").innerText = "IP 格式无效";
+                return;
+            }
+            document.getElementById("manualIpInput").value = "";
+            document.getElementById("manualDeviceHint").innerText = `已添加 ${result.body.ip}`;
+            loadManualDevices();
+            loadData();
+        });
+}
+
+function removeManualDevice(ip) {
+    fetch(`/api/manual-devices/${encodeURIComponent(ip)}`, {
+        method: "DELETE"
+    })
+        .then(() => {
+            document.getElementById("manualDeviceHint").innerText = `已删除 ${ip}`;
+            loadManualDevices();
+            loadData();
+        });
+}
+
+function loadSettings() {
+    fetch("/api/settings")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("ruleDelay").value = data.delay_ms;
+            document.getElementById("ruleCPU").value = data.cpu;
+            document.getElementById("ruleMemory").value = data.memory;
+        });
+}
+
+function updateAutoRefreshButton() {
+    document.getElementById("toggleAutoRefresh").innerText = autoRefreshEnabled ? "暂停实时刷新" : "继续实时刷新";
+}
+
+function stopPolling() {
+    if (statusTimerId) {
+        clearInterval(statusTimerId);
+        statusTimerId = null;
+    }
+    if (alertsTimerId) {
+        clearInterval(alertsTimerId);
+        alertsTimerId = null;
+    }
+}
+
+function startPolling() {
+    stopPolling();
+    if (!autoRefreshEnabled) return;
+    statusTimerId = setInterval(loadData, POLL_INTERVAL_MS);
+    alertsTimerId = setInterval(loadAlerts, ALERT_POLL_INTERVAL_MS);
+}
+
+document.getElementById("applyRules").addEventListener("click", () => {
+    const payload = {
+        delay_ms: document.getElementById("ruleDelay").value,
+        cpu: document.getElementById("ruleCPU").value,
+        memory: document.getElementById("ruleMemory").value
+    };
+    fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("rulesHint").innerText = `已更新：延迟 ${data.delay_ms} ms，CPU ${data.cpu}% ，内存 ${data.memory}%`;
+        });
+});
+
+document.getElementById("deviceTable").addEventListener("click", event => {
+    const removeButton = event.target.closest(".remove-manual-device");
+    if (removeButton) {
+        removeManualDevice(removeButton.getAttribute("data-ip"));
+        return;
+    }
+    const row = event.target.closest("tr[data-ip]");
+    if (!row) return;
+    loadDevice(row.getAttribute("data-ip"));
+});
+
+document.getElementById("refreshNow").addEventListener("click", () => {
+    loadData();
+    loadAlerts();
+});
+
+document.getElementById("toggleAutoRefresh").addEventListener("click", () => {
+    autoRefreshEnabled = !autoRefreshEnabled;
+    updateAutoRefreshButton();
+    startPolling();
+});
+
+document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
+document.getElementById("addManualDeviceBtn").addEventListener("click", addManualDevice);
+document.getElementById("saveMetadataBtn").addEventListener("click", saveMetadata);
+document.getElementById("searchInput").addEventListener("input", () => renderTable(currentData));
+document.getElementById("statusFilter").addEventListener("change", () => renderTable(currentData));
+document.getElementById("sortBy").addEventListener("change", () => renderTable(currentData));
+document.getElementById("clearFilters").addEventListener("click", () => {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("statusFilter").value = "all";
+    document.getElementById("sortBy").value = "ip";
+    renderTable(currentData);
+});
+document.getElementById("manualDeviceList").addEventListener("click", event => {
+    const removeButton = event.target.closest(".remove-manual-device");
+    if (!removeButton) return;
+    removeManualDevice(removeButton.getAttribute("data-ip"));
+});
+
+loadSettings();
+loadData();
+loadAlerts();
+loadManualDevices();
+updateAutoRefreshButton();
+startPolling();
+</script>
+</body>
+</html>
