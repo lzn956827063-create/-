@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>交换机 SNMP 监控</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f7f9;
+            --panel: #ffffff;
+            --text: #10233b;
+            --muted: #64748b;
+            --border: #dbe4ec;
+            --accent: #0f766e;
+            --good: #15803d;
+            --bad: #b91c1c;
+            --warn: #b45309;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 30%),
+                linear-gradient(180deg, #f8fbfd 0%, var(--bg) 100%);
+            color: var(--text);
+            font-family: "Segoe UI", "PingFang SC", sans-serif;
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 18px 40px;
+        }
+
+        .hero {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            margin: 10px 0 6px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 760px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: rgba(15, 118, 110, 0.12);
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 2fr auto auto;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 18px;
+        }
+
+        .switch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 18px;
+        }
+
+        .switch-card {
+            padding: 18px;
+        }
+
+        .switch-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+            align-items: start;
+        }
+
+        .switch-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status-up {
+            color: var(--good);
+            background: rgba(21, 128, 61, 0.12);
+        }
+
+        .status-down {
+            color: var(--bad);
+            background: rgba(185, 28, 28, 0.12);
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .meta-item {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: #f8fbfd;
+            padding: 12px;
+        }
+
+        .meta-label {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            max-height: 420px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        table {
+            margin: 0;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #f8fbfd;
+            z-index: 1;
+            color: var(--muted);
+        }
+
+        .rate {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .iface-up {
+            color: var(--good);
+            font-weight: 700;
+        }
+
+        .iface-down {
+            color: var(--bad);
+            font-weight: 700;
+        }
+
+        .empty {
+            padding: 28px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        /* 告警列表新增样式 */
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+        .alert-tag {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .tag-bad {
+            background: rgba(185, 28, 28, 0.12);
+            color: var(--bad);
+        }
+        .tag-warn {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warn);
+        }
+        .alert-info .main {
+            font-weight: 600;
+        }
+        .alert-info .subtle {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                grid-template-columns: 1fr;
+            }
+            .meta-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero {
+                flex-direction: column;
+                align-items: start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="hero">
+        <div>
+            <span class="tag">SNMP Switch Monitor</span>
+            <h1>交换机监控页面</h1>
+            <p>单独展示交换机 SNMP 系统信息、接口状态和端口流量，并实时记录异常告警。</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary" href="/">返回主页面</a>
+            <button class="btn btn-primary" id="refreshBtn">立即刷新</button>
+        </div>
+    </div>
+
+    <div class="panel toolbar">
+        <input class="form-control" id="ipsInput" placeholder="交换机 IP，逗号分隔，例如 192.168.56.10,192.168.56.11">
+        <button class="btn btn-outline-secondary" id="toggleAutoBtn">暂停自动刷新</button>
+        <div class="d-flex align-items-center muted" id="switchHint">加载中...</div>
+    </div>
+
+    <div id="switchContainer" class="switch-grid"></div>
+
+    <!-- 交换机告警记录 -->
+    <div class="panel mt-4 p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">交换机告警记录</h2>
+            <div class="d-flex gap-2">
+                <input type="text" id="alertSearch" class="form-control form-control-sm" placeholder="搜索 IP 或异常内容...">
+                <button id="refreshAlerts" class="btn btn-sm btn-outline-secondary">刷新</button>
+            </div>
+        </div>
+        <div id="switchAlertContainer">
+            <div class="empty">暂无告警记录</div>
+        </div>
+    </div>
+</div>
+
+<script>
+let autoRefresh = true;
+let timerId = null;
+const POLL_MS = 15000;
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function formatSpeed(bps) {
+    if (!bps) return "--";
+    if (bps >= 1_000_000_000) return `${(bps / 1_000_000_000).toFixed(1)} Gbps`;
+    if (bps >= 1_000_000) return `${(bps / 1_000_000).toFixed(1)} Mbps`;
+    return `${bps} bps`;
+}
+
+function interfaceRows(interfaces) {
+    if (!interfaces.length) {
+        return `<div class="empty">当前没有读取到接口表。</div>`;
+    }
+
+    return `
+        <div class="table-wrap">
+            <table class="table table-sm align-middle">
+                <thead>
+                <tr>
+                    <th>接口</th>
+                    <th>管理</th>
+                    <th>运行</th>
+                    <th>速率</th>
+                    <th>入流量</th>
+                    <th>出流量</th>
+                </tr>
+                </thead>
+                <tbody>
+                ${interfaces.map(item => `
+                    <tr>
+                        <td>
+                            <div><strong>${escapeHtml(item.name)}</strong></div>
+                            <div class="muted">ifIndex ${item.index}</div>
+                        </td>
+                        <td class="${item.admin_status === 'up' ? 'iface-up' : 'iface-down'}">${escapeHtml(item.admin_status)}</td>
+                        <td class="${item.oper_status === 'up' ? 'iface-up' : 'iface-down'}">${escapeHtml(item.oper_status)}</td>
+                        <td>${formatSpeed(item.speed_bps)}</td>
+                        <td class="rate">${Number(item.in_mbps || 0).toFixed(4)} Mbps</td>
+                        <td class="rate">${Number(item.out_mbps || 0).toFixed(4)} Mbps</td>
+                    </tr>
+                `).join("")}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+function renderSwitches(payload) {
+    const container = document.getElementById("switchContainer");
+    const switches = payload.switches || [];
+    document.getElementById("ipsInput").value = (payload.ips || []).join(",");
+    const updatedAt = payload.updated_at ? new Date(payload.updated_at * 1000).toLocaleTimeString() : "后台首次采集中";
+    document.getElementById("switchHint").innerText = `最近刷新：${updatedAt} | 交换机 ${switches.length} 台`;
+
+    if (!switches.length) {
+        container.innerHTML = `<div class="panel empty">没有配置交换机 IP。</div>`;
+        return;
+    }
+
+    container.innerHTML = switches.map(sw => {
+        if (!sw.reachable) {
+            return `
+                <div class="panel switch-card">
+                    <div class="switch-head">
+                        <div>
+                            <h2 class="switch-title">${escapeHtml(sw.ip)}</h2>
+                            <div class="muted">${sw.error === 'pending_refresh' ? '后台正在刷新缓存' : 'SNMP 无响应'}</div>
+                        </div>
+                        <span class="status-pill status-down">${sw.error === 'pending_refresh' ? '采集中' : '不可达'}</span>
+                    </div>
+                    <div class="empty">${sw.error === 'pending_refresh' ? '后台线程正在采集交换机数据，请等待几秒后自动刷新。' : '未读取到系统信息，请确认防火墙和 SNMP 配置。'}</div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="panel switch-card">
+                <div class="switch-head">
+                    <div>
+                        <h2 class="switch-title">${escapeHtml(sw.system.sysName || sw.ip)}</h2>
+                        <div class="muted">${escapeHtml(sw.ip)}</div>
+                    </div>
+                    <span class="status-pill status-up">SNMP 正常</span>
+                </div>
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-label">系统描述</div>
+                        <div class="meta-value">${escapeHtml(sw.system.sysDescr || "--")}</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">运行时长</div>
+                        <div class="meta-value">${escapeHtml(sw.system.sysUpTime || "--")}</div>
+                    </div>
+                </div>
+                ${interfaceRows(sw.interfaces || [])}
+            </div>
+        `;
+    }).join("");
+}
+
+function loadSwitches() {
+    const ips = document.getElementById("ipsInput").value.trim();
+    const query = ips ? `?ips=${encodeURIComponent(ips)}` : "";
+    document.getElementById("switchHint").innerText = "正在采集交换机 SNMP 数据...";
+    fetch(`/api/switches${query}`)
+        .then(res => res.json())
+        .then(renderSwitches)
+        .catch(() => {
+            document.getElementById("switchHint").innerText = "采集失败";
+        });
+}
+
+// 加载交换机告警
+function loadSwitchAlerts() {
+    const query = document.getElementById("alertSearch").value.trim();
+    fetch(`/api/switch-alerts?query=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(alerts => {
+            const container = document.getElementById("switchAlertContainer");
+            if (!alerts.length) {
+                container.innerHTML = '<div class="empty">没有匹配的告警记录</div>';
+                return;
+            }
+            container.innerHTML = alerts.map(alert => {
+                const anomalyList = Array.isArray(alert.anomalies) ? alert.anomalies.join(" / ") : alert.anomalies;
+                return `
+                <div class="alert-item">
+                    <span class="alert-tag tag-bad">告警</span>
+                    <div class="alert-info">
+                        <div class="main">${escapeHtml(anomalyList)}</div>
+                        <div class="subtle">${escapeHtml(alert.ip)} · ${escapeHtml(alert.timestamp)}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        })
+        .catch(() => {
+            document.getElementById("switchAlertContainer").innerHTML = '<div class="empty">告警加载失败</div>';
+        });
+}
+
+function startPolling() {
+    if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+    }
+    if (!autoRefresh) return;
+    timerId = setInterval(() => {
+        loadSwitches();
+        loadSwitchAlerts();
+    }, POLL_MS);
+}
+
+document.getElementById("refreshBtn").addEventListener("click", () => {
+    loadSwitches();
+    loadSwitchAlerts();
+});
+document.getElementById("toggleAutoBtn").addEventListener("click", () => {
+    autoRefresh = !autoRefresh;
+    document.getElementById("toggleAutoBtn").innerText = autoRefresh ? "暂停自动刷新" : "恢复自动刷新";
+    startPolling();
+});
+document.getElementById("alertSearch").addEventListener("input", loadSwitchAlerts);
+document.getElementById("refreshAlerts").addEventListener("click", loadSwitchAlerts);
+document.getElementById("ipsInput").addEventListener("change", () => {
+    loadSwitches();
+    loadSwitchAlerts();
+});
+
+// 初次加载
+loadSwitches();
+loadSwitchAlerts();
+startPolling();
+</script>
+</body>
+</html>
