@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}个人作品集 — 项目展示、技术博客、在线简历{% endblock %}">
+    <title>{% block title %}个人作品集{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    {% block extra_css %}{% endblock %}
+
+    <!-- Theme script: runs before paint to prevent FOUC -->
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">作品集</a>
+            <button class="nav-toggle" id="nav-toggle" aria-label="切换导航菜单">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/">首页</a></li>
+                <li><a href="/blog">博客</a></li>
+                <li>
+                    <button id="theme-toggle" class="theme-toggle" aria-label="切换主题">
+                        <span class="theme-icon-light">☀️</span>
+                        <span class="theme-icon-dark">🌙</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Main content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p>&copy; 2026 个人作品集. 基于 Flask 构建 &amp; ❤️</p>
+            <p class="footer-hint" id="footer-hint"></p>
+        </div>
+    </footer>
+
+    <!-- Core scripts -->
+    <script>
+        // 导航菜单切换
+        document.getElementById('nav-toggle').addEventListener('click', function() {
+            document.getElementById('nav-links').classList.toggle('active');
+            this.classList.toggle('active');
+        });
+        // 自动关闭提示消息
+        document.querySelectorAll('.flash-message').forEach(function(el) {
+            setTimeout(function() { el.style.display = 'none'; }, 4000);
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

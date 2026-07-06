@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+{% block title %}DevOps 工具箱 — 项目演示{% endblock %}
+{% block description %}实用开发工具箱：JSON格式化、Base64编解码、时间戳转换、URL编解码等{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+.devops-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.devops-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.devops-header h1 { font-size: var(--font-size-2xl); margin-bottom: 4px; }
+.devops-header p { color: var(--color-text-secondary); }
+
+.tool-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-3);
+}
+
+.tool-tab {
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.tool-tab:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.tool-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+.tool-panel { display: none; }
+.tool-panel.active { display: block; }
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    min-height: 400px;
+}
+
+.tool-input, .tool-output {
+    display: flex;
+    flex-direction: column;
+}
+
+.tool-input label, .tool-output label {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+}
+
+.tool-input textarea, .tool-output textarea {
+    flex: 1;
+    min-height: 300px;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    resize: vertical;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.tool-input textarea:focus, .tool-output textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.tool-actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+}
+
+.tool-output .tool-actions {
+    justify-content: flex-end;
+}
+
+/* Timestamp converter */
+.timestamp-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-4);
+}
+
+.timestamp-row .form-group { flex: 1; min-width: 200px; }
+
+.timestamp-result {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    margin-top: var(--space-4);
+}
+
+.timestamp-result .result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: var(--font-size-sm);
+}
+
+.timestamp-result .result-item:last-child { border: none; }
+
+.result-label { color: var(--color-text-muted); }
+.result-value { font-family: var(--font-mono); font-weight: 600; }
+
+/* Copy toast */
+.copy-toast {
+    position: fixed;
+    top: calc(var(--nav-height) + 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-success);
+    color: #fff;
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    z-index: 2000;
+    animation: fadeInOut 2s ease forwards;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@media (max-width: 768px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .devops-page { padding: var(--space-4); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="devops-page">
+    <header class="devops-header">
+        <h1>🔧 DevOps 工具箱</h1>
+        <p>JSON 格式化 · Base64 编解码 · 时间戳转换 · URL 编解码 · 正则测试 · 字数统计</p>
+    </header>
+
+    <nav class="tool-tabs">
+        <button class="tool-tab active" data-tool="json">JSON 格式化</button>
+        <button class="tool-tab" data-tool="base64">Base64 编解码</button>
+        <button class="tool-tab" data-tool="timestamp">时间戳转换</button>
+        <button class="tool-tab" data-tool="url">URL 编解码</button>
+        <button class="tool-tab" data-tool="regex">正则测试</button>
+    </nav>
+
+    <!-- JSON 格式化 -->
+    <div class="tool-panel active" id="panel-json">
+        <div class="tool-grid">
+            <div class="tool-input">
+                <label>输入 JSON</label>
+                <textarea id="json-input" placeholder='{"name": "example", "items": [1, 2, 3]}'></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-primary" id="btn-json-format">格式化</button>
+                    <button class="btn btn-sm btn-outline" id="btn-json-minify">压缩</button>
+                    <button class="btn btn-sm btn-outline" id="btn-json-clear">清空</button>
+                </div>
+            </div>
+            <div class="tool-output">
+                <label>输出结果</label>
+                <textarea id="json-output" readonly placeholder="格式化结果将显示在这里..."></textarea>
+                <div class="tool-actions">
+                    <span id="json-status" style="font-size:12px;color:var(--color-text-muted);align-self:center;"></span>
+                    <button class="btn btn-sm btn-outline" id="btn-json-copy">📋 复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Base64 -->
+    <div class="tool-panel" id="panel-base64">
+        <div class="tool-grid">
+            <div class="tool-input">
+                <label>输入文本</label>
+                <textarea id="base64-input" placeholder="输入要编码或解码的文本..."></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-primary" id="btn-base64-encode">编码 Encode</button>
+                    <button class="btn btn-sm btn-outline" id="btn-base64-decode">解码 Decode</button>
+                    <button class="btn btn-sm btn-outline" id="btn-base64-clear">清空</button>
+                </div>
+            </div>
+            <div class="tool-output">
+                <label>输出结果</label>
+                <textarea id="base64-output" readonly placeholder="编码/解码结果将显示在这里..."></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-outline" id="btn-base64-copy">📋 复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 时间戳 -->
+    <div class="tool-panel" id="panel-timestamp">
+        <div class="timestamp-row">
+            <div class="form-group">
+                <label>Unix 时间戳（秒）→ 日期</label>
+                <input type="number" class="form-input" id="ts-input" placeholder="如: 1700000000">
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-ts-to-date">转换 →</button>
+            <div class="form-group">
+                <label>日期时间 → 时间戳</label>
+                <input type="datetime-local" class="form-input" id="ts-date-input">
+            </div>
+            <button class="btn btn-outline btn-sm" id="btn-ts-now">当前时间</button>
+        </div>
+        <div class="timestamp-result" id="ts-result">
+            <p style="color:var(--color-text-muted);text-align:center;">输入时间戳或选择日期进行转换</p>
+        </div>
+    </div>
+
+    <!-- URL 编解码 -->
+    <div class="tool-panel" id="panel-url">
+        <div class="tool-grid">
+            <div class="tool-input">
+                <label>输入文本</label>
+                <textarea id="url-input" placeholder="输入 URL 或需要编解码的文本..."></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-primary" id="btn-url-encode">编码 Encode</button>
+                    <button class="btn btn-sm btn-outline" id="btn-url-decode">解码 Decode</button>
+                    <button class="btn btn-sm btn-outline" id="btn-url-clear">清空</button>
+                </div>
+            </div>
+            <div class="tool-output">
+                <label>输出结果</label>
+                <textarea id="url-output" readonly placeholder="编解码结果将显示在这里..."></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-outline" id="btn-url-copy">📋 复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 正则测试 -->
+    <div class="tool-panel" id="panel-regex">
+        <div class="form-row" style="margin-bottom:var(--space-4);">
+            <div class="form-group" style="flex:2">
+                <label>正则表达式</label>
+                <input type="text" class="form-input" id="regex-pattern" placeholder="/[a-zA-Z]+/g" style="font-family:var(--font-mono);">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>标志</label>
+                <select class="form-select" id="regex-flags">
+                    <option value="">无</option>
+                    <option value="g">g - 全局</option>
+                    <option value="i">i - 忽略大小写</option>
+                    <option value="gi">gi - 全局+忽略大小写</option>
+                    <option value="m">m - 多行</option>
+                    <option value="gm">gm - 全局+多行</option>
+                </select>
+            </div>
+        </div>
+        <div class="tool-grid">
+            <div class="tool-input">
+                <label>测试文本</label>
+                <textarea id="regex-input" placeholder="输入要匹配的文本..."></textarea>
+            </div>
+            <div class="tool-output">
+                <label>匹配结果 <span id="regex-count" style="font-weight:400;color:var(--color-text-muted);"></span></label>
+                <textarea id="regex-output" readonly placeholder="匹配结果将高亮显示在这里..."></textarea>
+                <div class="tool-actions">
+                    <button class="btn btn-sm btn-outline" id="btn-regex-copy">📋 复制结果</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="copy-toast" class="copy-toast" style="display:none;">已复制到剪贴板 ✓</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    // ======= Tab switching =======
+    document.querySelectorAll('.tool-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tool-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.tool-panel').forEach(function(p) { p.classList.remove('active'); });
+            tab.classList.add('active');
+            document.getElementById('panel-' + tab.dataset.tool).classList.add('active');
+        });
+    });
+
+    // ======= Copy helper =======
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            var toast = document.getElementById('copy-toast');
+            toast.style.display = 'block';
+            toast.style.animation = 'none';
+            toast.offsetHeight;
+            toast.style.animation = '';
+            setTimeout(function() { toast.style.display = 'none'; }, 2000);
+        });
+    }
+
+    function copyFromEl(id) {
+        var el = document.getElementById(id);
+        if (el.value.trim()) copyText(el.value);
+    }
+
+    // ======= JSON =======
+    document.getElementById('btn-json-format').addEventListener('click', function() {
+        var input = document.getElementById('json-input').value;
+        var status = document.getElementById('json-status');
+        try {
+            var obj = JSON.parse(input);
+            document.getElementById('json-output').value = JSON.stringify(obj, null, 2);
+            status.textContent = '✓ 格式有效';
+            status.style.color = 'var(--color-success)';
+        } catch(e) {
+            document.getElementById('json-output').value = '';
+            status.textContent = '✗ ' + e.message;
+            status.style.color = 'var(--color-danger)';
+        }
+    });
+
+    document.getElementById('btn-json-minify').addEventListener('click', function() {
+        try {
+            var obj = JSON.parse(document.getElementById('json-input').value);
+            document.getElementById('json-output').value = JSON.stringify(obj);
+            document.getElementById('json-status').textContent = '✓ 已压缩';
+            document.getElementById('json-status').style.color = 'var(--color-success)';
+        } catch(e) {
+            document.getElementById('json-status').textContent = '✗ ' + e.message;
+            document.getElementById('json-status').style.color = 'var(--color-danger)';
+        }
+    });
+
+    document.getElementById('btn-json-clear').addEventListener('click', function() {
+        document.getElementById('json-input').value = '';
+        document.getElementById('json-output').value = '';
+        document.getElementById('json-status').textContent = '';
+    });
+
+    document.getElementById('btn-json-copy').addEventListener('click', function() { copyFromEl('json-output'); });
+
+    // ======= Base64 =======
+    document.getElementById('btn-base64-encode').addEventListener('click', function() {
+        try {
+            document.getElementById('base64-output').value = btoa(unescape(encodeURIComponent(document.getElementById('base64-input').value)));
+        } catch(e) {
+            document.getElementById('base64-output').value = '编码失败: ' + e.message;
+        }
+    });
+
+    document.getElementById('btn-base64-decode').addEventListener('click', function() {
+        try {
+            document.getElementById('base64-output').value = decodeURIComponent(escape(atob(document.getElementById('base64-input').value)));
+        } catch(e) {
+            document.getElementById('base64-output').value = '解码失败: 请确认输入为有效的 Base64 字符串';
+        }
+    });
+
+    document.getElementById('btn-base64-clear').addEventListener('click', function() {
+        document.getElementById('base64-input').value = '';
+        document.getElementById('base64-output').value = '';
+    });
+
+    document.getElementById('btn-base64-copy').addEventListener('click', function() { copyFromEl('base64-output'); });
+
+    // ======= Timestamp =======
+    document.getElementById('btn-ts-to-date').addEventListener('click', function() {
+        var ts = parseInt(document.getElementById('ts-input').value);
+        if (!ts) return;
+        var d = new Date(ts * 1000);
+        showTimestampResult(d, ts);
+    });
+
+    document.getElementById('btn-ts-now').addEventListener('click', function() {
+        var now = new Date();
+        var ts = Math.floor(now.getTime() / 1000);
+        document.getElementById('ts-input').value = ts;
+        showTimestampResult(now, ts);
+    });
+
+    document.getElementById('ts-date-input').addEventListener('change', function() {
+        if (!this.value) return;
+        var d = new Date(this.value);
+        var tsSec = Math.floor(d.getTime() / 1000);
+        var tsMs = d.getTime();
+        document.getElementById('ts-input').value = tsSec;
+        showTimestampResult(d, tsSec, tsMs);
+    });
+
+    function showTimestampResult(d, tsSec, tsMs) {
+        document.getElementById('ts-result').innerHTML =
+            '<div class="result-item"><span class="result-label">时间戳（秒）</span><span class="result-value">' + tsSec + '</span></div>' +
+            '<div class="result-item"><span class="result-label">时间戳（毫秒）</span><span class="result-value">' + (tsMs || tsSec * 1000) + '</span></div>' +
+            '<div class="result-item"><span class="result-label">ISO 格式</span><span class="result-value">' + d.toISOString() + '</span></div>' +
+            '<div class="result-item"><span class="result-label">本地时间</span><span class="result-value">' + d.toLocaleString('zh-CN') + '</span></div>' +
+            '<div class="result-item"><span class="result-label">UTC 时间</span><span class="result-value">' + d.toUTCString() + '</span></div>' +
+            '<div class="result-item"><span class="result-label">星期</span><span class="result-value">' + ['日','一','二','三','四','五','六'][d.getDay()] + '</span></div>';
+    }
+
+    // ======= URL =======
+    document.getElementById('btn-url-encode').addEventListener('click', function() {
+        document.getElementById('url-output').value = encodeURIComponent(document.getElementById('url-input').value);
+    });
+
+    document.getElementById('btn-url-decode').addEventListener('click', function() {
+        try {
+            document.getElementById('url-output').value = decodeURIComponent(document.getElementById('url-input').value);
+        } catch(e) {
+            document.getElementById('url-output').value = '解码失败: 无效的编码字符串';
+        }
+    });
+
+    document.getElementById('btn-url-clear').addEventListener('click', function() {
+        document.getElementById('url-input').value = '';
+        document.getElementById('url-output').value = '';
+    });
+
+    document.getElementById('btn-url-copy').addEventListener('click', function() { copyFromEl('url-output'); });
+
+    // ======= Regex =======
+    var regexInput = document.getElementById('regex-input');
+    var regexPattern = document.getElementById('regex-pattern');
+    var regexFlags = document.getElementById('regex-flags');
+
+    function testRegex() {
+        var pattern = regexPattern.value;
+        var flags = regexFlags.value;
+        var text = regexInput.value;
+        var output = document.getElementById('regex-output');
+        var count = document.getElementById('regex-count');
+
+        if (!pattern) { output.value = ''; count.textContent = ''; return; }
+
+        try {
+            var re = new RegExp(pattern, flags);
+            var matches = text.match(re);
+            if (matches) {
+                output.value = '匹配到 ' + matches.length + ' 处:\n\n' + matches.map(function(m, i) { return '[' + i + '] ' + m; }).join('\n');
+                count.textContent = '(' + matches.length + ' 处匹配)';
+            } else {
+                output.value = '无匹配';
+                count.textContent = '(无匹配)';
+            }
+        } catch(e) {
+            output.value = '正则错误: ' + e.message;
+            count.textContent = '(错误)';
+        }
+    }
+
+    [regexInput, regexPattern, regexFlags].forEach(function(el) {
+        el.addEventListener('input', testRegex);
+    });
+
+    document.getElementById('btn-regex-copy').addEventListener('click', function() { copyFromEl('regex-output'); });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}博客编辑器 — 管理后台{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/styles/github.min.css" id="hljs-light">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/styles/github-dark.min.css" id="hljs-dark" disabled>
+{% endblock %}
+
+{% block content %}
+<section class="admin-page blog-editor-page">
+    <header class="admin-header">
+        <a href="/edit" class="back-link">← 返回管理后台</a>
+        <h1>📝 博客编辑器</h1>
+    </header>
+
+    <div class="blog-editor-layout">
+        <!-- 左侧：文章列表 -->
+        <aside class="blog-sidebar">
+            <div class="sidebar-toolbar">
+                <button id="btn-new-post" class="btn btn-primary btn-sm">+ 新建文章</button>
+                <select id="filter-category" class="form-select">
+                    <option value="">全部分类</option>
+                </select>
+                <select id="filter-status" class="form-select">
+                    <option value="">全部状态</option>
+                    <option value="published">已发布</option>
+                    <option value="draft">草稿</option>
+                </select>
+            </div>
+            <div id="post-list" class="post-list">
+                <p class="loading-text">加载中...</p>
+            </div>
+        </aside>
+
+        <!-- 右侧：编辑器 -->
+        <main class="blog-main" id="editor-panel">
+            <div id="editor-empty" class="editor-empty">
+                <p>从左侧选择一篇文章，或新建一篇文章。</p>
+            </div>
+            <div id="editor-form" class="editor-form" style="display:none;">
+                <input type="hidden" id="post-id" value="">
+
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label for="post-title">标题 *</label>
+                        <input type="text" id="post-title" class="form-input" maxlength="200" placeholder="文章标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="post-slug">Slug *</label>
+                        <input type="text" id="post-slug" class="form-input" maxlength="200" placeholder="url-friendly-slug">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="post-category">分类</label>
+                        <select id="post-category" class="form-select">
+                            <option value="">无分类</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="post-status">状态</label>
+                        <select id="post-status" class="form-select">
+                            <option value="0">草稿</option>
+                            <option value="1">已发布</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-excerpt">摘要</label>
+                    <textarea id="post-excerpt" class="form-input" rows="2" maxlength="500" placeholder="文章摘要（留空则自动生成）"></textarea>
+                </div>
+
+                <div class="editor-split">
+                    <div class="editor-pane">
+                        <label for="post-content">正文 (Markdown)</label>
+                        <textarea id="post-content" class="form-input editor-textarea" rows="20" placeholder="在此撰写 Markdown 内容..."></textarea>
+                    </div>
+                    <div class="editor-pane">
+                        <label>预览</label>
+                        <div id="post-preview" class="editor-preview"></div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button id="btn-save-post" class="btn btn-primary">保存文章</button>
+                    <button id="btn-delete-post" class="btn btn-danger" style="display:none;">删除</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</section>
+
+<!-- 分类管理弹窗 -->
+<dialog id="category-modal">
+    <h3>管理分类</h3>
+    <div class="form-group">
+        <input type="text" id="new-cat-name" class="form-input" placeholder="分类名称">
+    </div>
+    <div class="form-group">
+        <input type="text" id="new-cat-slug" class="form-input" placeholder="Slug（自动生成）">
+    </div>
+    <div class="form-actions">
+        <button id="btn-add-category" class="btn btn-primary btn-sm">添加分类</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('category-modal').close()">关闭</button>
+    </div>
+    <hr>
+    <ul id="category-list" class="category-manage-list"></ul>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/lib/highlight.min.js"></script>
+<script>
+    marked.setOptions({ breaks: true, gfm: true });
+    if (typeof hljs !== 'undefined') {
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            }
+        });
+    }
+</script>
+<script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+{% endblock %}

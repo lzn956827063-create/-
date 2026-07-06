@@ -1,0 +1,475 @@
+/* ================================================================
+   homepage.css — Portfolio homepage · dark tech aesthetic
+   ================================================================ */
+
+/* --- Hero --- */
+.hero {
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - var(--nav-height) - 60px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-12) var(--space-6);
+    overflow: hidden;
+}
+
+.hero-avatar {
+    font-size: 5rem;
+    margin-bottom: var(--space-5);
+    display: inline-block;
+}
+
+.hero-name {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--space-2);
+    letter-spacing: -0.5px;
+}
+
+.hero-name-accent {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-title {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+}
+
+.hero-bio {
+    color: var(--color-text-secondary);
+    max-width: 600px;
+    margin: 0 auto var(--space-6);
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+}
+
+.hero-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* --- Section Titles --- */
+.section-title {
+    text-align: center;
+    margin-bottom: var(--space-8);
+    position: relative;
+    font-size: var(--font-size-3xl);
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    margin: var(--space-3) auto 0;
+    border-radius: var(--radius-full);
+}
+
+/* ================================================================
+   Glass Card — unified surface with border glow
+   ================================================================ */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-glass);
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.glass-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-glass), var(--shadow-glow);
+    border-color: var(--glass-border-glow, rgba(108,131,247,0.25));
+}
+
+/* ================================================================
+   Layout — full-width vertical stack
+   ================================================================ */
+.page-sections {
+    position: relative;
+    z-index: 1;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 var(--space-6) var(--space-10);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+}
+
+/* ================================================================
+   Skills Section
+   ================================================================ */
+.skills-section {
+    /* no extra style needed, gap from parent handles spacing */
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+}
+
+.chart-card {
+    padding: var(--space-5);
+}
+
+.chart-card h3 {
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-4);
+    text-align: center;
+    font-weight: 600;
+}
+
+.chart-container {
+    width: 100%;
+    height: 340px;
+}
+
+/* ================================================================
+   Projects Section — full-width, featured card first
+   ================================================================ */
+.project-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+}
+
+/* Featured project — spans full row & gets extra glow */
+.project-card.featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    align-items: start;
+    gap: 0 var(--space-5);
+    padding: var(--space-6);
+    border-color: var(--glass-border-glow, rgba(108,131,247,0.2));
+    box-shadow: var(--shadow-glass), 0 0 60px rgba(108,131,247,0.08);
+    overflow: visible;
+}
+
+.project-card.featured::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: var(--radius-xl);
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(108,131,247,0.4), rgba(247, 37, 133, 0.3), rgba(32,191,107,0.3), rgba(108,131,247,0.4));
+    background-size: 300% 300%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    z-index: -1;
+    animation: borderGlow 4s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.project-card.featured:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-glass), 0 0 80px rgba(108,131,247,0.15), 0 0 120px rgba(108,131,247,0.06);
+}
+
+/* Badge on featured card */
+.featured-badge {
+    position: absolute;
+    top: -12px;
+    right: var(--space-5);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    color: #fff;
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 16px rgba(108,131,247,0.35);
+    white-space: nowrap;
+    z-index: 2;
+}
+
+.featured .project-icon-wrap {
+    grid-row: 1 / 3;
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+}
+
+.featured .project-card-body {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+}
+
+.featured .project-card-body h3 {
+    font-size: var(--font-size-2xl);
+}
+
+.featured .project-card-body p {
+    -webkit-line-clamp: unset;
+    max-width: 90%;
+}
+
+.featured .project-tags {
+    grid-column: 1 / 3;
+    grid-row: 3;
+    margin-top: var(--space-4);
+}
+
+.featured .project-links {
+    grid-column: 3;
+    grid-row: 1 / 4;
+    margin-top: 0;
+    align-self: center;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+/* Normal project cards */
+.project-card {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card:not(.featured)::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.project-card:not(.featured):hover::before {
+    transform: scaleX(1);
+}
+
+.project-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-lg);
+    background: var(--gradient-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: var(--space-4);
+    border: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+.project-card:not(.featured) h3 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-2);
+}
+
+.project-card:not(.featured) p {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+    margin-bottom: var(--space-4);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+}
+
+.project-tags span {
+    font-size: var(--font-size-xs);
+    padding: 0.25em 0.75em;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: var(--radius-full);
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.glass-card:hover .project-tags span {
+    background: rgba(108, 131, 247, 0.22);
+    color: #fff;
+}
+
+.project-links {
+    margin-top: auto;
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* ================================================================
+   Education — full-width elegant single row
+   ================================================================ */
+.education-section {
+    /* spacer */
+}
+
+.education-grid {
+    display: flex;
+    justify-content: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.education-card {
+    display: flex;
+    gap: var(--space-4);
+    align-items: flex-start;
+    padding: var(--space-6);
+    width: 100%;
+}
+
+.education-dot {
+    width: 14px;
+    height: 14px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+    box-shadow: 0 0 0 6px var(--color-primary-light);
+}
+
+.education-body {
+    flex: 1;
+}
+
+.education-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-primary);
+    font-weight: 600;
+    display: block;
+    margin-bottom: var(--space-1);
+}
+
+.education-body h3 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-1);
+}
+
+.education-org {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-sm);
+}
+
+.education-body > p {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+}
+
+/* ================================================================
+   Reveal Stagger
+   ================================================================ */
+.reveal-stagger > *:nth-child(1) { transition-delay: 0s; }
+.reveal-stagger > *:nth-child(2) { transition-delay: 0.1s; }
+.reveal-stagger > *:nth-child(3) { transition-delay: 0.2s; }
+.reveal-stagger > *:nth-child(4) { transition-delay: 0.3s; }
+
+/* ================================================================
+   Responsive
+   ================================================================ */
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        max-width: 550px;
+        margin: 0 auto;
+    }
+    .chart-container { height: 300px; }
+
+    .featured .project-card-body h3 {
+        font-size: var(--font-size-xl);
+    }
+}
+
+@media (max-width: 768px) {
+    .page-sections {
+        gap: var(--space-6);
+        padding: 0 var(--space-4) var(--space-8);
+    }
+
+    .charts-grid { grid-template-columns: 1fr; }
+    .chart-container { height: 260px; }
+
+    .hero {
+        min-height: auto;
+        padding: var(--space-8) var(--space-4) var(--space-6);
+    }
+    .hero-name { font-size: var(--font-size-3xl); }
+    .hero-avatar { font-size: 3.5rem; }
+
+    /* Featured card collapses to single column */
+    .project-card.featured {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: var(--space-4);
+    }
+    .featured .project-icon-wrap { grid-row: auto; }
+    .featured .project-card-body { grid-column: auto; grid-row: auto; }
+    .featured .project-card-body p { max-width: 100%; }
+    .featured .project-tags { grid-column: auto; grid-row: auto; margin-top: 0; }
+    .featured .project-links {
+        grid-column: auto;
+        grid-row: auto;
+        flex-direction: row;
+        align-self: auto;
+    }
+
+    .project-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-4);
+    }
+
+    .education-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-title {
+        font-size: var(--font-size-2xl);
+        margin-bottom: var(--space-5);
+    }
+
+    .project-card {
+        padding: var(--space-5);
+    }
+}
+
+@media (max-width: 480px) {
+    .page-sections {
+        padding: 0 var(--space-3) var(--space-6);
+        gap: var(--space-5);
+    }
+
+    .hero { padding: var(--space-6) var(--space-4) var(--space-5); }
+    .hero-bio { font-size: var(--font-size-base); }
+    .chart-container { height: 240px; }
+    .project-card { padding: var(--space-4); }
+    .project-card.featured { padding: var(--space-5); }
+}

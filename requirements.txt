@@ -1,0 +1,10 @@
+Flask==3.1.0
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.36
+python-dotenv==1.0.1
+bleach==6.2.0
+markdown==3.7
+Pygments==2.18.0
+openai==1.55.0
+requests==2.32.3
+Pillow==11.0.0

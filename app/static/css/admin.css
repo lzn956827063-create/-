@@ -1,0 +1,528 @@
+/* ================================================================
+   admin.css — Admin panel, blog editor, resume editor styles
+   ================================================================ */
+
+/* --- Admin Page --- */
+.admin-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+.admin-header {
+    margin-bottom: var(--space-6);
+}
+
+.admin-header h1 {
+    margin-bottom: var(--space-2);
+}
+
+.admin-warning {
+    color: var(--color-warning);
+    font-size: var(--font-size-sm);
+    background: rgba(243, 156, 18, 0.1);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+.back-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+    display: inline-block;
+}
+
+.back-link:hover {
+    color: var(--color-primary);
+}
+
+/* --- Admin Cards --- */
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-5);
+}
+
+.admin-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    display: block;
+    color: var(--color-text);
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.admin-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    color: var(--color-text);
+}
+
+.admin-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+}
+
+.admin-card h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-2);
+}
+
+.admin-card p {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-3);
+}
+
+.admin-card-link {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+/* ==================================================================
+   Blog Editor
+   ================================================================== */
+.blog-editor-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-5);
+    min-height: 70vh;
+}
+
+.blog-sidebar {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+.sidebar-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.post-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.post-list-item {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: var(--font-size-sm);
+}
+
+.post-list-item:hover,
+.post-list-item.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.post-list-item .item-title {
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+}
+
+.post-list-item .item-meta {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    display: flex;
+    gap: var(--space-3);
+}
+
+.draft-badge {
+    background: var(--color-warning);
+    color: #fff;
+    font-size: var(--font-size-xs);
+    padding: 0.1em 0.5em;
+    border-radius: var(--radius-full);
+}
+
+.published-badge {
+    background: var(--color-success);
+    color: #fff;
+    font-size: var(--font-size-xs);
+    padding: 0.1em 0.5em;
+    border-radius: var(--radius-full);
+}
+
+.blog-main {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.editor-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: var(--color-text-muted);
+}
+
+.editor-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.editor-pane label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.editor-textarea {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    min-height: 400px;
+}
+
+.editor-preview {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-4);
+    min-height: 400px;
+    max-height: 600px;
+    overflow-y: auto;
+    background: var(--color-bg);
+}
+
+.editor-preview h1, .editor-preview h2, .editor-preview h3 {
+    font-size: var(--font-size-lg);
+    margin-top: var(--space-4);
+}
+
+.form-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border-light);
+}
+
+/* Loading */
+.loading-text {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-6);
+    font-size: var(--font-size-sm);
+}
+
+/* --- Category Modal --- */
+#category-modal {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    background: var(--color-surface);
+    color: var(--color-text);
+    max-width: 480px;
+    width: 90%;
+}
+
+#category-modal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.category-manage-list {
+    list-style: none;
+}
+
+.category-manage-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    font-size: var(--font-size-sm);
+}
+
+/* ==================================================================
+   Resume Editor
+   ================================================================== */
+.resume-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    min-height: 80vh;
+}
+
+.resume-form-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Form tabs */
+.form-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    overflow-x: auto;
+}
+
+.form-tab {
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    background: none;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+}
+
+.form-tab:hover { color: var(--color-text); }
+.form-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-panel {
+    display: none;
+    padding: var(--space-5);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
+/* AI button */
+.ai-btn {
+    background: var(--color-primary-light);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.1em 0.4em;
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    transition: all var(--transition-fast);
+}
+
+.ai-btn:hover {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.ai-btn.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Resume form sections */
+.skill-group-block,
+.experience-block,
+.education-block,
+.project-block {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.skill-group-block h4,
+.experience-block h4,
+.education-block h4,
+.project-block h4 {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-3);
+}
+
+.block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-3);
+}
+
+.block-header button {
+    background: none;
+    border: none;
+    color: var(--color-danger);
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    padding: 0 var(--space-1);
+}
+
+.skill-items-row {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    align-items: center;
+}
+
+.skill-items-row input {
+    flex: 1;
+}
+
+.skill-items-row select {
+    width: 60px;
+}
+
+/* Resume Preview Panel */
+.resume-preview-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+}
+
+.preview-toolbar .form-select {
+    width: auto;
+    min-width: 140px;
+}
+
+.save-status {
+    font-size: var(--font-size-xs);
+    color: var(--color-success);
+    margin-left: auto;
+}
+
+.save-status.saving {
+    color: var(--color-warning);
+}
+
+.preview-frame {
+    flex: 1;
+    padding: var(--space-6);
+    overflow-y: auto;
+    background: #fff;
+    color: #333;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+[data-theme="dark"] .preview-frame {
+    background: #fff;
+    color: #333;
+}
+
+/* Resume templates (inside preview frame) */
+.resume-template {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.resume-template header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #333;
+}
+
+.resume-template h1 { font-size: 24px; margin-bottom: 4px; }
+.resume-template h2 { font-size: 16px; margin-top: 16px; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+.resume-template h3 { font-size: 14px; margin-bottom: 2px; }
+
+/* Professional template */
+.resume-professional .resume-contact {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    font-size: 12px; color: #555; margin-top: 4px;
+}
+
+/* Modern template */
+.resume-modern {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 24px;
+}
+.resume-modern .resume-sidebar {
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px;
+}
+.resume-modern .resume-sidebar h1,
+.resume-modern .resume-sidebar h3 { color: #fff; }
+.resume-modern .resume-sidebar ul { padding-left: 16px; }
+
+/* Minimal template */
+.resume-minimal header { border: none; }
+.resume-minimal .headline { font-size: 14px; color: #555; }
+.resume-minimal .contact-line { font-size: 12px; color: #777; }
+.resume-minimal .summary { font-style: italic; }
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 2000;
+    animation: slideIn var(--transition-base);
+    max-width: 360px;
+}
+
+.toast-info { background: var(--color-info); color: #fff; }
+.toast-success { background: var(--color-success); color: #fff; }
+.toast-error { background: var(--color-danger); color: #fff; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .admin-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-editor-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar {
+        max-height: 200px;
+    }
+
+    .editor-split {
+        grid-template-columns: 1fr;
+    }
+
+    .resume-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .tab-panel {
+        max-height: 50vh;
+    }
+}
+
+@media (max-width: 480px) {
+    .resume-modern {
+        grid-template-columns: 1fr;
+    }
+}

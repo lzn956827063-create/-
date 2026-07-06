@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}管理后台{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+    <header class="admin-header">
+        <h1>🛠️ 管理后台</h1>
+        <p class="admin-warning">⚠️ 此页面不对外公开，请收藏链接以便访问。</p>
+    </header>
+
+    <div class="admin-cards">
+        <a href="/edit/blog" class="admin-card">
+            <div class="admin-card-icon">📝</div>
+            <h2>博客编辑器</h2>
+            <p>创建、编辑和管理博客文章与分类。支持 Markdown 实时预览。</p>
+            <span class="admin-card-link">打开编辑器 →</span>
+        </a>
+
+        <a href="/edit/resume" class="admin-card">
+            <div class="admin-card-icon">📄</div>
+            <h2>简历编辑器</h2>
+            <p>AI 驱动的简历生成工具。填写信息，获取 AI 优化建议，导出 PDF。</p>
+            <span class="admin-card-link">打开编辑器 →</span>
+        </a>
+
+        <a href="/" class="admin-card">
+            <div class="admin-card-icon">🏠</div>
+            <h2>查看网站</h2>
+            <p>返回前台作品集首页，查看访客视角下的网站展示效果。</p>
+            <span class="admin-card-link">访问首页 →</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

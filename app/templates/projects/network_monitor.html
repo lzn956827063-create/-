@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}内网监控面板 — 毕业设计{% endblock %}
+{% block description %}基于 Flask + SNMP 的企业内网实时监控系统，支持设备自动发现、延迟/CPU/内存采集、异常告警与数据导出{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+.project-showcase {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.showcase-hero {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.showcase-hero .badge {
+    display: inline-block;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-3); }
+.showcase-hero p { color: var(--color-text-secondary); max-width: 700px; margin: 0 auto; font-size: var(--font-size-lg); line-height: 1.8; }
+
+/* Tech tags */
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-5);
+}
+
+.tech-tag {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Feature grid */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+}
+
+.feature-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.feature-card .feat-icon { font-size: 2rem; margin-bottom: var(--space-3); }
+.feature-card h3 { font-size: var(--font-size-lg); margin-bottom: var(--space-2); }
+.feature-card p { color: var(--color-text-secondary); font-size: var(--font-size-sm); line-height: 1.7; }
+
+/* Screenshot area */
+.screenshot-section {
+    margin-bottom: var(--space-8);
+}
+
+.screenshot-section h2 {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.screenshot-frame {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+}
+
+.screenshot-frame img {
+    width: 100%;
+    display: block;
+}
+
+.screenshot-placeholder {
+    padding: var(--space-10);
+    text-align: center;
+    color: var(--color-text-muted);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.screenshot-placeholder .placeholder-icon { font-size: 4rem; }
+
+/* Architecture */
+.arch-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-6);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-8);
+}
+
+.arch-box {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-5);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.arch-arrow { font-size: 1.5rem; color: var(--color-primary); }
+
+/* Links */
+.project-links-row {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--space-8);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="project-showcase">
+    <header class="showcase-hero">
+        <div class="badge">🎓 毕业设计项目</div>
+        <h1>企业内网实时监控系统</h1>
+        <p>
+            基于 Python Flask 框架与 SNMP 协议构建的企业级网络设备监控平台。
+            支持局域网设备自动发现、延迟/CPU/内存实时采集、异常检测告警、
+            数据可视化与 CSV 导出，适用于中小型企业 IT 运维场景。
+        </p>
+        <div class="tech-stack">
+            <span class="tech-tag">🐍 Python 3</span>
+            <span class="tech-tag">🌶️ Flask</span>
+            <span class="tech-tag">📡 SNMP v2c</span>
+            <span class="tech-tag">📊 Chart.js</span>
+            <span class="tech-tag">🗄️ SQLite</span>
+            <span class="tech-tag">🎨 Bootstrap 5</span>
+            <span class="tech-tag">🔧 psutil</span>
+            <span class="tech-tag">🧵 多线程</span>
+        </div>
+    </header>
+
+    <!-- 核心功能 -->
+    <h2 style="text-align:center;margin-bottom:var(--space-6);">核心功能</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feat-icon">🔍</div>
+            <h3>设备自动发现</h3>
+            <p>通过 ARP 表扫描 + ICMP Ping 自动发现局域网内所有活跃设备，支持自定义 IP 范围与扫描间隔。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">📡</div>
+            <h3>SNMP 交换机监控</h3>
+            <p>通过 SNMP v2c 协议采集交换机端口流量、带宽利用率、包错误率等关键指标，支持多交换机并发监控。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">📈</div>
+            <h3>实时性能采集</h3>
+            <p>定时轮询设备的延迟（ICMP RTT）、CPU 使用率与内存占用，历史数据缓存最多 120 个采样点供趋势分析。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">⚠️</div>
+            <h3>异常检测告警</h3>
+            <p>可配置阈值（延迟/CPU/内存），超过阈值自动标记异常并记录告警历史。支持设备离线检测与通知。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">📊</div>
+            <h3>可视化面板</h3>
+            <p>Chart.js 渲染实时趋势曲线与设备级历史图表。设备列表支持搜索、状态筛选、多维度排序。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">💾</div>
+            <h3>数据导出</h3>
+            <p>支持按设备或全量导出 CSV 格式的历史监控数据，方便离线分析或导入 Excel/Navicat 进一步处理。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">🏷️</div>
+            <h3>设备别名管理</h3>
+            <p>为每个 IP 设备设置别名与备注，支持手动添加/删除监控设备，不依赖自动扫描结果。</p>
+        </div>
+        <div class="feature-card">
+            <div class="feat-icon">🖥️</div>
+            <h3>设备详情抽屉</h3>
+            <p>点击设备行弹出侧边抽屉，展示该设备的实时状态、离线次数、历史曲线、异常记录及元数据编辑。</p>
+        </div>
+    </div>
+
+    <!-- 系统架构 -->
+    <h2 style="text-align:center;margin-bottom:var(--space-6);">系统架构</h2>
+    <div class="arch-flow">
+        <div class="arch-box">🧵 设备发现线程<br><small>ARP + Ping 扫描</small></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box">🧵 状态采集线程<br><small>ICMP / CPU / 内存</small></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box">🗄️ SQLite<br><small>持久化存储</small></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box">🌐 Flask API<br><small>JSON 接口</small></div>
+        <span class="arch-arrow">→</span>
+        <div class="arch-box">🎨 前端面板<br><small>Bootstrap 5 + Chart.js</small></div>
+    </div>
+    <p style="text-align:center;margin-top:var(--space-4);">
+        <span class="arch-box">📡 SNMP 线程</span>
+        <span class="arch-arrow" style="margin: 0 8px;">→</span>
+        <span class="arch-box">交换机端口采集<br><small>pysnmp v1arch</small></span>
+        <span class="arch-arrow" style="margin: 0 8px;">→</span>
+        <span class="arch-box">异常检测<br><small>CPU / 丢包率</small></span>
+    </p>
+
+    <!-- 截图 -->
+    <h2 style="text-align:center;margin-bottom:var(--space-6);margin-top:var(--space-8);">界面预览</h2>
+    <div class="screenshot-section">
+        <div class="screenshot-frame">
+            <img src="{{ url_for('static', filename='img/network-monitor.png') }}" alt="内网设备监控面板截图">
+        </div>
+    </div>
+
+    <!-- 快速链接 -->
+    <div class="project-links-row">
+        <a href="https://github.com/lzn956827063-create/-" target="_blank" rel="noopener" class="btn btn-outline">📁 GitHub 源代码</a>
+        <a href="/" class="btn btn-primary">🏠 返回首页</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,576 @@
+{% extends "base.html" %}
+{% block title %}NaviHub — 个人导航页{% endblock %}
+{% block description %}极客风个人导航起始页，支持自定义书签、多引擎搜索、天气和时钟{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ================================================================
+   NaviHub — dark hacker aesthetic
+   ================================================================ */
+:root {
+    --nh-bg: #0a0f1d;
+    --nh-surface: rgba(15, 21, 37, 0.6);
+    --nh-border: rgba(255, 255, 255, 0.06);
+    --nh-glow: 0 0 60px rgba(108, 131, 247, 0.1);
+}
+
+.navihub-page {
+    min-height: calc(100vh - var(--nav-height));
+    background: var(--nh-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-10) var(--space-6) var(--space-12);
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Clock --- */
+.nh-clock {
+    font-family: var(--font-mono);
+    font-size: 5rem;
+    font-weight: 300;
+    letter-spacing: 4px;
+    color: var(--color-text);
+    margin-bottom: var(--space-1);
+    text-shadow: 0 0 30px rgba(108, 131, 247, 0.2);
+    user-select: none;
+}
+
+.nh-date {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-8);
+    letter-spacing: 1px;
+}
+
+/* --- Search --- */
+.nh-search-wrap {
+    width: 100%;
+    max-width: 640px;
+    margin-bottom: var(--space-8);
+}
+
+.nh-search-bar {
+    display: flex;
+    gap: 0;
+    background: var(--nh-surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--nh-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    box-shadow: var(--nh-glow);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.nh-search-bar:focus-within {
+    border-color: rgba(108, 131, 247, 0.4);
+    box-shadow: 0 0 30px rgba(108, 131, 247, 0.15), 0 0 60px rgba(108, 131, 247, 0.05);
+}
+
+.nh-engine-select {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    padding: 0 var(--space-4);
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 80px;
+    text-align: center;
+    border-right: 1px solid var(--nh-border);
+}
+
+.nh-engine-select option {
+    background: #0f1525;
+    color: #e0e4f0;
+}
+
+.nh-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+    font-family: inherit;
+    padding: 14px var(--space-5);
+    outline: none;
+}
+
+.nh-search-input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.nh-search-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-primary);
+    font-size: var(--font-size-xl);
+    padding: 0 var(--space-5);
+    cursor: pointer;
+    transition: color var(--transition-fast);
+}
+
+.nh-search-btn:hover {
+    color: var(--color-primary-hover);
+}
+
+/* --- Bookmarks --- */
+.nh-bookmarks {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+}
+
+.nh-bookmark-card {
+    background: var(--nh-surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--nh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-3);
+    text-align: center;
+    cursor: pointer;
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.nh-bookmark-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 30px rgba(108, 131, 247, 0.12);
+    border-color: rgba(108, 131, 247, 0.3);
+}
+
+.nh-bookmark-card .bm-icon {
+    font-size: 2rem;
+}
+
+.nh-bookmark-card .bm-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.nh-bookmark-card .bm-url {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.nh-bookmark-card .bm-delete {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+}
+
+.nh-bookmark-card:hover .bm-delete {
+    opacity: 1;
+}
+
+.nh-bookmark-card .bm-delete:hover {
+    color: var(--color-danger);
+    background: rgba(231, 76, 60, 0.1);
+}
+
+/* Add bookmark button */
+.nh-add-card {
+    border: 1px dashed var(--nh-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
+    cursor: pointer;
+}
+
+.nh-add-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(108, 131, 247, 0.08);
+}
+
+.nh-add-card .bm-icon {
+    font-size: 1.5rem;
+    color: var(--color-text-muted);
+}
+
+/* --- Add Bookmark Modal --- */
+.nh-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.nh-modal-overlay.active {
+    display: flex;
+}
+
+.nh-modal {
+    background: rgba(15, 21, 37, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.nh-modal h3 {
+    margin-bottom: var(--space-4);
+    font-size: var(--font-size-xl);
+}
+
+.nh-modal .form-group {
+    margin-bottom: var(--space-4);
+}
+
+.nh-modal .form-group label {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-1);
+    font-weight: 500;
+}
+
+.nh-modal .form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.nh-modal .form-group input:focus {
+    border-color: var(--color-primary);
+}
+
+.nh-modal-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    margin-top: var(--space-5);
+}
+
+/* --- Weather --- */
+.nh-weather {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    background: var(--nh-surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--nh-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-6);
+}
+
+.nh-weather .w-icon {
+    font-size: 1.5rem;
+}
+
+.nh-weather .w-temp {
+    font-weight: 700;
+    color: var(--color-text);
+    font-size: var(--font-size-lg);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .nh-clock { font-size: 3.5rem; }
+    .nh-bookmarks { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .nh-search-wrap { max-width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .nh-clock { font-size: 2.5rem; }
+    .nh-bookmarks { grid-template-columns: repeat(3, 1fr); gap: var(--space-3); }
+    .nh-bookmark-card { padding: var(--space-4) var(--space-2); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="navihub-page">
+
+    <!-- Clock -->
+    <div class="nh-clock" id="nh-clock">00:00</div>
+    <div class="nh-date" id="nh-date"></div>
+
+    <!-- Weather -->
+    <div class="nh-weather" id="nh-weather">
+        <span class="w-icon">☁️</span>
+        <span class="w-temp">--°C</span>
+        <span id="nh-weather-desc">加载中...</span>
+    </div>
+
+    <!-- Search -->
+    <div class="nh-search-wrap">
+        <div class="nh-search-bar">
+            <select class="nh-engine-select" id="nh-engine">
+                <option value="google">Google</option>
+                <option value="bing">Bing</option>
+                <option value="baidu">Baidu</option>
+                <option value="duckduckgo">DuckDuckGo</option>
+            </select>
+            <input type="text" class="nh-search-input" id="nh-search-input" placeholder="输入搜索内容，按 Enter 搜索..." autofocus>
+            <button class="nh-search-btn" id="nh-search-btn">→</button>
+        </div>
+    </div>
+
+    <!-- Bookmarks -->
+    <div class="nh-bookmarks" id="nh-bookmarks">
+        <!-- dynamically filled -->
+    </div>
+
+</div>
+
+<!-- Add Bookmark Modal -->
+<div class="nh-modal-overlay" id="nh-modal-overlay">
+    <div class="nh-modal">
+        <h3>添加书签</h3>
+        <div class="form-group">
+            <label>名称</label>
+            <input type="text" id="nh-bm-title" placeholder="例如：GitHub">
+        </div>
+        <div class="form-group">
+            <label>网址</label>
+            <input type="url" id="nh-bm-url" placeholder="https://...">
+        </div>
+        <div class="form-group">
+            <label>Emoji 图标</label>
+            <input type="text" id="nh-bm-icon" placeholder="例如：🐙" maxlength="4">
+        </div>
+        <div class="nh-modal-actions">
+            <button class="btn btn-glass btn-sm" id="nh-modal-cancel">取消</button>
+            <button class="btn btn-primary btn-sm" id="nh-modal-save">保存</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    var STORAGE_KEY = 'navihub_data';
+
+    // ── Default bookmarks ────────────────────────────────────────
+    var defaults = {
+        engine: 'google',
+        bookmarks: [
+            { title: 'GitHub', url: 'https://github.com', icon: '🐙' },
+            { title: 'Google', url: 'https://google.com', icon: '🔍' },
+            { title: 'Bilibili', url: 'https://bilibili.com', icon: '📺' },
+            { title: '知乎', url: 'https://zhihu.com', icon: '💡' },
+            { title: 'LeetCode', url: 'https://leetcode.cn', icon: '💻' },
+            { title: 'CSDN', url: 'https://csdn.net', icon: '📝' },
+        ],
+    };
+
+    function loadData() {
+        try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return JSON.parse(JSON.stringify(defaults));
+    }
+
+    function saveData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    var data = loadData();
+
+    // ── Clock ────────────────────────────────────────────────────
+    function updateClock() {
+        var now = new Date();
+        var h = String(now.getHours()).padStart(2, '0');
+        var m = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('nh-clock').textContent = h + ':' + m;
+        var days = ['日', '一', '二', '三', '四', '五', '六'];
+        document.getElementById('nh-date').textContent =
+            now.getFullYear() + '年' + (now.getMonth() + 1) + '月' + now.getDate() + '日 星期' + days[now.getDay()];
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ── Weather ──────────────────────────────────────────────────
+    function fetchWeather() {
+        fetch('https://wttr.in?format=j1')
+            .then(function (r) { return r.json(); })
+            .then(function (j) {
+                var cur = j.current_condition[0];
+                var temp = cur.temp_C + '°C';
+                var desc = cur.weatherDesc[0].value;
+                var code = parseInt(cur.weatherCode);
+                var icons = { 113: '☀️', 116: '⛅', 119: '☁️', 122: '🌥️', 143: '🌫️',
+                    176: '🌦️', 179: '🌨️', 200: '⛈️', 227: '🌬️', 230: '🌨️',
+                    248: '🌫️', 260: '🌫️', 263: '🌧️', 266: '🌧️', 281: '🌧️',
+                    284: '🌧️', 293: '🌧️', 296: '🌧️', 299: '🌧️', 302: '🌧️',
+                    305: '🌧️', 308: '🌧️', 311: '🌧️', 314: '🌧️', 317: '🌧️',
+                    320: '🌨️', 323: '🌨️', 326: '🌨️', 329: '🌨️', 332: '🌨️',
+                    335: '🌨️', 338: '🌨️', 350: '🌨️', 353: '🌦️', 356: '🌧️',
+                    359: '🌧️', 362: '🌨️', 365: '🌨️', 368: '🌨️', 371: '🌨️',
+                    374: '🌨️', 377: '🌨️', 386: '⛈️', 389: '⛈️', 392: '⛈️',
+                    395: '🌨️' };
+                document.getElementById('nh-weather').innerHTML =
+                    '<span class="w-icon">' + (icons[code] || '🌤️') + '</span>' +
+                    '<span class="w-temp">' + temp + '</span>' +
+                    '<span>' + desc + '</span>';
+            })
+            .catch(function () {
+                document.getElementById('nh-weather').innerHTML =
+                    '<span class="w-icon">🌤️</span><span>天气不可用</span>';
+            });
+    }
+    fetchWeather();
+
+    // ── Search ───────────────────────────────────────────────────
+    var engines = {
+        google: 'https://www.google.com/search?q=',
+        bing: 'https://www.bing.com/search?q=',
+        baidu: 'https://www.baidu.com/s?wd=',
+        duckduckgo: 'https://duckduckgo.com/?q=',
+    };
+
+    var engineSelect = document.getElementById('nh-engine');
+    engineSelect.value = data.engine;
+    engineSelect.addEventListener('change', function () {
+        data.engine = engineSelect.value;
+        saveData(data);
+    });
+
+    function doSearch() {
+        var q = document.getElementById('nh-search-input').value.trim();
+        if (!q) return;
+        var url = engines[data.engine] + encodeURIComponent(q);
+        window.location.href = url;
+    }
+
+    document.getElementById('nh-search-btn').addEventListener('click', doSearch);
+    document.getElementById('nh-search-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') doSearch();
+    });
+
+    // ── Bookmarks ────────────────────────────────────────────────
+    var bookmarksEl = document.getElementById('nh-bookmarks');
+
+    function renderBookmarks() {
+        var html = '';
+        data.bookmarks.forEach(function (bm, idx) {
+            html += '<a class="nh-bookmark-card" href="' + bm.url + '" target="_blank" rel="noopener">' +
+                '<button class="bm-delete" data-idx="' + idx + '" title="删除">×</button>' +
+                '<span class="bm-icon">' + (bm.icon || '🔗') + '</span>' +
+                '<span class="bm-title">' + escapeHtml(bm.title) + '</span>' +
+                '<span class="bm-url">' + escapeHtml(bm.url.replace(/^https?:\/\//, '')) + '</span>' +
+                '</a>';
+        });
+        // Add button
+        html += '<div class="nh-bookmark-card nh-add-card" id="nh-add-btn">' +
+            '<span class="bm-icon">＋</span>' +
+            '<span class="bm-title">添加书签</span>' +
+            '</div>';
+        bookmarksEl.innerHTML = html;
+
+        // Bind delete buttons
+        var dels = bookmarksEl.querySelectorAll('.bm-delete');
+        for (var i = 0; i < dels.length; i++) {
+            dels[i].addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var idx = parseInt(this.getAttribute('data-idx'));
+                data.bookmarks.splice(idx, 1);
+                saveData(data);
+                renderBookmarks();
+            });
+        }
+
+        // Bind add button
+        document.getElementById('nh-add-btn').addEventListener('click', function () {
+            openModal();
+        });
+    }
+
+    // ── Add Modal ────────────────────────────────────────────────
+    var modalOverlay = document.getElementById('nh-modal-overlay');
+
+    function openModal() {
+        modalOverlay.classList.add('active');
+        document.getElementById('nh-bm-title').focus();
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        document.getElementById('nh-bm-title').value = '';
+        document.getElementById('nh-bm-url').value = '';
+        document.getElementById('nh-bm-icon').value = '';
+    }
+
+    document.getElementById('nh-modal-cancel').addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', function (e) {
+        if (e.target === modalOverlay) closeModal();
+    });
+
+    document.getElementById('nh-modal-save').addEventListener('click', function () {
+        var title = document.getElementById('nh-bm-title').value.trim();
+        var url = document.getElementById('nh-bm-url').value.trim();
+        var icon = document.getElementById('nh-bm-icon').value.trim();
+        if (!title || !url) return;
+        if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+        data.bookmarks.push({ title: title, url: url, icon: icon || '🔗' });
+        saveData(data);
+        renderBookmarks();
+        closeModal();
+    });
+
+    // ── Utility ──────────────────────────────────────────────────
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
+    renderBookmarks();
+})();
+</script>
+{% endblock %}

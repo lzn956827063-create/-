@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}博客 — 全部文章{% endblock %}
+{% block description %}技术博客 — Web 开发、Python、JavaScript 等技术分享{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="blog-page">
+    <header class="blog-header">
+        <h1>技术博客</h1>
+        <p class="blog-subtitle">关于软件工程的技术思考、教程与深度分享</p>
+    </header>
+
+    <!-- 搜索 & 分类 -->
+    <div class="blog-toolbar">
+        <div class="blog-search">
+            <input type="text" id="blog-search" placeholder="搜索文章..." value="{{ current_search or '' }}">
+        </div>
+        <div class="blog-categories">
+            <a href="/blog" class="category-chip {% if not current_category %}active{% endif %}">全部</a>
+            {% for cat in categories %}
+            <a href="/blog?category={{ cat.slug }}" class="category-chip {% if current_category == cat.slug %}active{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 文章列表 -->
+    {% if posts %}
+    <div class="post-grid">
+        {% for post in posts %}
+        <article class="post-card">
+            {% if post.cover_image %}
+            <div class="post-card-image">
+                <img src="{{ post.cover_image }}" alt="{{ post.title }}" loading="lazy">
+            </div>
+            {% endif %}
+            <div class="post-card-body">
+                {% if post.category_name %}
+                <a href="/blog?category={{ post.category_slug }}" class="post-category">{{ post.category_name }}</a>
+                {% endif %}
+                <h2 class="post-card-title">
+                    <a href="/blog/{{ post.slug }}">{{ post.title }}</a>
+                </h2>
+                {% if post.excerpt %}
+                <p class="post-card-excerpt">{{ post.excerpt }}</p>
+                {% endif %}
+                <div class="post-card-meta">
+                    <span>{{ post.created_at[:10] }}</span>
+                    <span>{{ post.view_count }} 次阅读</span>
+                    <span>{{ post.comment_count }} 条评论</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <!-- 分页 -->
+    {% if pagination.pages > 1 %}
+    <nav class="pagination">
+        {% if pagination.page > 1 %}
+        <a href="/blog?page={{ pagination.page - 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="page-link">&laquo; 上一页</a>
+        {% endif %}
+        {% for p in range(1, pagination.pages + 1) %}
+        <a href="/blog?page={{ p }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="page-link {% if p == pagination.page %}active{% endif %}">{{ p }}</a>
+        {% endfor %}
+        {% if pagination.page < pagination.pages %}
+        <a href="/blog?page={{ pagination.page + 1 }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_search %}&search={{ current_search }}{% endif %}" class="page-link">下一页 &raquo;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <!-- 空状态 -->
+    <div class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h2>暂无文章</h2>
+        {% if current_search %}
+        <p>未找到匹配「{{ current_search }}」的文章，请尝试其他搜索词。</p>
+        <a href="/blog" class="btn btn-outline">清除搜索</a>
+        {% else %}
+        <p>文章发布后将显示在这里，敬请期待！</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+{% endblock %}

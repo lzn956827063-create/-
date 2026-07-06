@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}AI 简历编辑器 — 管理后台{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="admin-page resume-editor-page">
+    <header class="admin-header">
+        <a href="/edit" class="back-link">← 返回管理后台</a>
+        <h1>📄 AI 简历编辑器</h1>
+    </header>
+
+    <div class="resume-layout" id="resume-app">
+        <!-- 左侧：表单 -->
+        <div class="resume-form-panel">
+            <nav class="form-tabs">
+                <button class="form-tab active" data-tab="basic">基本信息</button>
+                <button class="form-tab" data-tab="skills">技能</button>
+                <button class="form-tab" data-tab="experience">工作经历</button>
+                <button class="form-tab" data-tab="education">教育背景</button>
+                <button class="form-tab" data-tab="projects">项目经验</button>
+            </nav>
+
+            <!-- Tab: 基本信息 -->
+            <div class="tab-panel active" id="tab-basic">
+                <div class="form-group">
+                    <label>姓名 <button class="ai-btn" data-field="basic_info.name" data-action="polish" title="AI 润色">✨</button></label>
+                    <input type="text" class="form-input resume-field" data-field="basic_info.name" placeholder="你的姓名">
+                </div>
+                <div class="form-group">
+                    <label>职位头衔</label>
+                    <input type="text" class="form-input resume-field" data-field="basic_info.title" placeholder="如：高级全栈开发工程师">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" class="form-input resume-field" data-field="basic_info.email" placeholder="you@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>电话</label>
+                        <input type="text" class="form-input resume-field" data-field="basic_info.phone" placeholder="+86 138-0000-0000">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>所在城市</label>
+                        <input type="text" class="form-input resume-field" data-field="basic_info.location" placeholder="如：北京">
+                    </div>
+                    <div class="form-group">
+                        <label>个人网站</label>
+                        <input type="url" class="form-input resume-field" data-field="basic_info.website" placeholder="https://yoursite.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>个人简介 <button class="ai-btn" data-field="basic_info.summary" data-action="polish" title="AI 润色">✨</button> <button class="ai-btn" data-field="basic_info.summary" data-action="proofread" title="AI 校对">🔍</button></label>
+                    <textarea class="form-input resume-field" data-field="basic_info.summary" rows="5" placeholder="简要介绍你的专业背景和职业目标"></textarea>
+                </div>
+            </div>
+
+            <!-- Tab: 技能 -->
+            <div class="tab-panel" id="tab-skills">
+                <div id="skills-container"></div>
+                <button class="btn btn-outline btn-sm" id="btn-add-skill-group">+ 添加技能分类</button>
+            </div>
+
+            <!-- Tab: 工作经历 -->
+            <div class="tab-panel" id="tab-experience">
+                <div id="experience-container"></div>
+                <button class="btn btn-outline btn-sm" id="btn-add-experience">+ 添加工作经历</button>
+            </div>
+
+            <!-- Tab: 教育背景 -->
+            <div class="tab-panel" id="tab-education">
+                <div id="education-container"></div>
+                <button class="btn btn-outline btn-sm" id="btn-add-education">+ 添加教育经历</button>
+            </div>
+
+            <!-- Tab: 项目经验 -->
+            <div class="tab-panel" id="tab-projects">
+                <div id="projects-container"></div>
+                <button class="btn btn-outline btn-sm" id="btn-add-project">+ 添加项目</button>
+            </div>
+        </div>
+
+        <!-- 右侧：预览 -->
+        <div class="resume-preview-panel">
+            <div class="preview-toolbar">
+                <select id="template-select" class="form-select">
+                    <option value="professional">专业风格</option>
+                    <option value="modern">现代风格</option>
+                    <option value="minimal">极简风格</option>
+                </select>
+                <button id="btn-export-pdf" class="btn btn-primary btn-sm">📥 导出 PDF</button>
+                <span id="save-status" class="save-status">已保存</span>
+            </div>
+            <div class="preview-frame" id="resume-preview">
+                <p class="loading-text">加载预览中...</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 提示消息 -->
+<div id="toast" class="toast" style="display:none;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/ai-helpers.js') }}"></script>
+<script src="{{ url_for('static', filename='js/resume-editor.js') }}"></script>
+{% endblock %}

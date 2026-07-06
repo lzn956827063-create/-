@@ -1,0 +1,297 @@
+/* ================================================================
+   blog.css — Blog listing, detail, and comments styles
+   ================================================================ */
+
+/* --- Blog Page --- */
+.blog-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+.blog-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.blog-header h1 {
+    margin-bottom: var(--space-2);
+}
+
+.blog-subtitle {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lg);
+}
+
+/* --- Toolbar --- */
+.blog-toolbar {
+    margin-bottom: var(--space-6);
+}
+
+.blog-search {
+    margin-bottom: var(--space-4);
+}
+
+.blog-search input {
+    width: 100%;
+    max-width: 500px;
+    padding: 0.7em 1em;
+    font-size: var(--font-size-base);
+    font-family: inherit;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-bg-secondary);
+    color: var(--color-text);
+    transition: all var(--transition-fast);
+}
+
+.blog-search input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+    background: var(--color-bg);
+}
+
+.blog-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.category-chip {
+    padding: 0.3em 0.9em;
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    background: var(--color-bg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+}
+
+.category-chip:hover,
+.category-chip.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* --- Post Grid --- */
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+}
+
+.post-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.post-card-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+.post-card-body {
+    padding: var(--space-4);
+}
+
+.post-category {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-2);
+    display: inline-block;
+}
+
+.post-card-title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-2);
+}
+
+.post-card-title a {
+    color: var(--color-text);
+}
+
+.post-card-title a:hover {
+    color: var(--color-primary);
+}
+
+.post-card-excerpt {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    margin-bottom: var(--space-3);
+}
+
+.post-card-meta {
+    display: flex;
+    gap: var(--space-3);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+/* --- Pagination --- */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.page-link:hover,
+.page-link.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* --- Blog Detail --- */
+.blog-detail {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+.detail-header {
+    margin-bottom: var(--space-6);
+}
+
+.detail-header h1 {
+    margin: var(--space-2) 0;
+}
+
+.detail-meta {
+    display: flex;
+    gap: var(--space-4);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.detail-cover {
+    margin-bottom: var(--space-6);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.detail-cover img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.detail-content {
+    font-size: var(--font-size-lg);
+    line-height: 1.8;
+}
+
+.detail-content h2 { margin-top: var(--space-8); margin-bottom: var(--space-4); }
+.detail-content h3 { margin-top: var(--space-6); margin-bottom: var(--space-3); }
+.detail-content ul, .detail-content ol { margin: var(--space-4) 0; padding-left: var(--space-6); }
+.detail-content li { margin-bottom: var(--space-2); }
+.detail-content img { border-radius: var(--radius-md); margin: var(--space-4) 0; }
+
+/* --- Comments --- */
+.comments-section {
+    margin-top: var(--space-10);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+}
+
+.comments-section h2 {
+    margin-bottom: var(--space-4);
+}
+
+.comments-list {
+    margin-bottom: var(--space-6);
+}
+
+.comment-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+}
+
+.comment-header strong {
+    color: var(--color-text);
+}
+
+.comment-header time {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+}
+
+.comment-body {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+}
+
+.no-comments {
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-6);
+}
+
+.comment-form {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+}
+
+.comment-form h3 {
+    margin-bottom: var(--space-4);
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .post-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blog-detail {
+        padding: var(--space-6) var(--space-4);
+    }
+
+    .detail-content {
+        font-size: var(--font-size-base);
+    }
+}

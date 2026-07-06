@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}个人作品集 — 首页{% endblock %}
+{% block description %}个人作品集网站，展示项目、技能与经历{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Particle background -->
+<canvas id="particle-canvas" aria-hidden="true"></canvas>
+
+<!-- 个人简介 -->
+<section class="hero reveal" id="hero">
+    <div class="hero-avatar" style="animation: float 6s ease-in-out infinite;">👨‍💻</div>
+    <h1 class="hero-name">你好，我是 <span class="hero-name-accent">梁智能</span></h1>
+    <p class="hero-title">应届毕业生 · 计算机科学与技术 · 广州城市理工学院</p>
+    <p class="hero-bio">
+        2026 届计算机专业应届毕业生，热爱 Web 开发与开源技术。
+        熟练掌握 Python、Flask、JavaScript 等前后端技术栈，具备独立开发完整 Web 应用的能力。
+    </p>
+    <div class="hero-actions">
+        <a href="/blog" class="btn btn-primary">阅读博客</a>
+        <a href="https://github.com/lzn956827063-create/-" target="_blank" rel="noopener" class="btn btn-glass">GitHub</a>
+    </div>
+</section>
+
+<!-- 全宽垂直布局 -->
+<div class="page-sections">
+
+    <!-- 技能 & 专长 -->
+    <section class="skills-section reveal" id="skills">
+        <h2 class="section-title">技能 &amp; 专长</h2>
+        <div class="charts-grid">
+            <div class="chart-card glass-card">
+                <h3>技能雷达</h3>
+                <div class="chart-container" id="radar-chart"></div>
+            </div>
+            <div class="chart-card glass-card">
+                <h3>技术分布</h3>
+                <div class="chart-container" id="pie-chart"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 精选项目 -->
+    <section class="projects-section reveal" id="projects">
+        <h2 class="section-title">精选项目</h2>
+        <div class="project-grid reveal-stagger">
+
+            <!-- 核心项目：DataViz 低代码看板平台 — 独占整行，流光边框 + 徽章 -->
+            <div class="project-card glass-card featured">
+                <span class="featured-badge">Featured</span>
+                <div class="project-icon-wrap">&#128202;</div>
+                <div class="project-card-body">
+                    <h3>DataViz 低代码看板平台</h3>
+                    <p>企业级低代码可视化数据看板平台。Schema 驱动架构、通用数据桥接（MySQL/PostgreSQL/SQLite/HTTP API）、GridStack.js 拖拽搭建器、ECharts 暗色主题动态渲染、版本历史与一键回滚、JWT 认证体系。已上线 PythonAnywhere 生产环境。</p>
+                </div>
+                <div class="project-tags">
+                    <span>Python</span><span>Flask</span><span>ECharts 5</span><span>GridStack.js</span><span>SQLite</span><span>JWT</span><span>低代码</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/dataviz-dashboard" class="btn btn-primary">查看详情 &rarr;</a>
+                    <a href="https://lzn.pythonanywhere.com" target="_blank" rel="noopener" class="btn btn-glass btn-sm">在线演示</a>
+                    <a href="https://github.com/lzn956827063-create/dataviz-dashboard" target="_blank" rel="noopener" class="btn btn-glass btn-sm">源代码</a>
+                </div>
+            </div>
+
+            <!-- 核心项目：内网监控面板 — 独占整行，流光边框 + 徽章 -->
+            <div class="project-card glass-card featured">
+                <span class="featured-badge">Graduation Project</span>
+                <div class="project-icon-wrap">&#128200;</div>
+                <div class="project-card-body">
+                    <h3>内网监控面板</h3>
+                    <p>毕业设计项目。基于 Flask + SNMP 的企业内网实时监控系统，支持设备自动发现、延迟/CPU/内存采集、SNMP 交换机端口流量监控、异常检测告警与 CSV 数据导出，适用于中小型企业 IT 运维场景。</p>
+                </div>
+                <div class="project-tags">
+                    <span>Python</span><span>Flask</span><span>SNMP v2c</span><span>Chart.js</span><span>SQLite</span><span>多线程</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/network-monitor" class="btn btn-primary">查看详情 &rarr;</a>
+                    <a href="https://github.com/lzn956827063-create/-" target="_blank" rel="noopener" class="btn btn-glass btn-sm">源代码</a>
+                </div>
+            </div>
+
+            <!-- 次要项目：AI 智能工作台 -->
+            <div class="project-card glass-card">
+                <div class="project-icon-wrap">&#129302;</div>
+                <h3>AI 智能工作台</h3>
+                <p>多功能 AI 工作台：智能对话、文件上传分析、简历优化、代码审查，基于阿里云百炼大模型驱动。</p>
+                <div class="project-tags">
+                    <span>Python</span><span>Flask</span><span>LLM</span><span>阿里云百炼</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/ai-chat" class="btn btn-glass btn-sm">打开工作台 &rarr;</a>
+                </div>
+            </div>
+
+            <!-- 次要项目：DevOps 工具箱 -->
+            <div class="project-card glass-card">
+                <div class="project-icon-wrap">&#128295;</div>
+                <h3>DevOps 工具箱</h3>
+                <p>开发实用工具集：JSON 格式化、Base64 编解码、时间戳转换、URL 编解码、正则测试。</p>
+                <div class="project-tags">
+                    <span>JavaScript</span><span>工具集</span><span>开发者</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/devops" class="btn btn-glass btn-sm">打开工具 &rarr;</a>
+                </div>
+            </div>
+
+            <!-- 次要项目：NaviHub 个人导航 -->
+            <div class="project-card glass-card">
+                <div class="project-icon-wrap">&#127760;</div>
+                <h3>NaviHub 个人导航</h3>
+                <p>极客风浏览器起始页：多引擎搜索、自定义书签、实时时钟、天气小组件，数据本地持久化。</p>
+                <div class="project-tags">
+                    <span>JavaScript</span><span>LocalStorage</span><span>API</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/navihub" class="btn btn-glass btn-sm">打开导航 &rarr;</a>
+                </div>
+            </div>
+
+            <!-- 次要项目：Markdown 简历生成器 -->
+            <div class="project-card glass-card">
+                <div class="project-icon-wrap">&#128196;</div>
+                <h3>Markdown 简历生成器</h3>
+                <p>在线 Markdown 简历编辑器：左侧编写、右侧实时预览、3 套模板切换、一键导出 PDF。</p>
+                <div class="project-tags">
+                    <span>Markdown</span><span>marked.js</span><span>PDF 导出</span>
+                </div>
+                <div class="project-links">
+                    <a href="/projects/resume-builder" class="btn btn-glass btn-sm">打开工具 &rarr;</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 教育背景 — 收尾，优雅单排 -->
+    <section class="education-section reveal" id="experience">
+        <h2 class="section-title">教育背景</h2>
+        <div class="education-grid">
+            <div class="education-card glass-card">
+                <div class="education-dot"></div>
+                <div class="education-body">
+                    <span class="education-date">2022 年 9 月 – 2026 年 6 月</span>
+                    <h3>计算机科学与技术 学士</h3>
+                    <p class="education-org">广州城市理工学院</p>
+                    <p>主修课程：数据结构与算法、操作系统、计算机网络、数据库原理、软件工程、Web 开发技术。毕业设计方向：企业内网实时监控系统。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scroll-reveal.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

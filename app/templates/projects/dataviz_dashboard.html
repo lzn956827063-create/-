@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% block title %}DataViz 低代码看板平台 — 项目详情{% endblock %}
+{% block description %}企业级低代码可视化数据看板平台：Schema 驱动、通用数据桥接、GridStack.js 拖拽搭建、ECharts 动态渲染、版本回滚、JWT 认证{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+.project-showcase {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.showcase-hero {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.showcase-hero .badge {
+    display: inline-block;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-3); }
+.showcase-hero p { color: var(--color-text-secondary); max-width: 700px; margin: 0 auto; font-size: var(--font-size-lg); line-height: 1.8; }
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-5);
+}
+
+.tech-tag {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hero-links {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-5);
+    flex-wrap: wrap;
+}
+
+.showcase-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.showcase-main h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.showcase-main h3 {
+    font-size: var(--font-size-lg);
+    margin: var(--space-5) 0 var(--space-3);
+    color: var(--color-primary);
+}
+
+.showcase-main p {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-main ul {
+    color: var(--color-text-secondary);
+    line-height: 1.9;
+    padding-left: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.showcase-main ul li { margin-bottom: var(--space-1); }
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.feature-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.feature-item .f-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.feature-item h4 { font-size: var(--font-size-base); margin-bottom: 4px; }
+.feature-item p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0; }
+
+/* Sidebar */
+.showcase-sidebar {
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+}
+
+.sidebar-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.sidebar-card h4 {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.sidebar-card .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+.sidebar-card .stat-row:last-child { border-bottom: none; }
+.sidebar-card .stat-label { color: var(--color-text-muted); }
+.sidebar-card .stat-value { color: var(--color-text); font-weight: 600; }
+
+.screenshot-box {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: var(--space-5) 0;
+}
+
+.screenshot-box .screenshot-header {
+    padding: 8px 14px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    gap: 6px;
+}
+
+.screenshot-box .dot { width: 10px; height: 10px; border-radius: 50%; }
+.screenshot-box .dot:nth-child(1) { background: #e74c3c; }
+.screenshot-box .dot:nth-child(2) { background: #f7b731; }
+.screenshot-box .dot:nth-child(3) { background: #20bf6b; }
+
+.screenshot-box .screenshot-body {
+    padding: var(--space-6);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+    .showcase-body { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .showcase-hero h1 { font-size: var(--font-size-2xl); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="project-showcase">
+    <header class="showcase-hero">
+        <span class="badge">Featured Project</span>
+        <h1>DataViz 低代码看板平台</h1>
+        <p>企业级低代码可视化数据看板搭建平台。通过 JSON Schema 驱动 + 通用数据桥接架构，实现异构数据源的统一接入与 ECharts 动态渲染，配合 GridStack.js 拖拽构建器，让非技术人员也能快速搭建专业数据大屏。</p>
+
+        <div class="tech-stack">
+            <span class="tech-tag">Python 3.11</span>
+            <span class="tech-tag">Flask 3.1</span>
+            <span class="tech-tag">SQLAlchemy</span>
+            <span class="tech-tag">SQLite</span>
+            <span class="tech-tag">PyJWT</span>
+            <span class="tech-tag">ECharts 5.5</span>
+            <span class="tech-tag">GridStack.js 10.3</span>
+            <span class="tech-tag">RESTful API</span>
+            <span class="tech-tag">gunicorn</span>
+        </div>
+
+        <div class="hero-links">
+            <a href="https://lzn.pythonanywhere.com" target="_blank" rel="noopener" class="btn btn-primary">在线演示 &rarr;</a>
+            <a href="https://github.com/lzn956827063-create/dataviz-dashboard" target="_blank" rel="noopener" class="btn btn-glass">源代码</a>
+            <a href="https://lzn.pythonanywhere.com/login" target="_blank" rel="noopener" class="btn btn-glass">登录体验</a>
+        </div>
+    </header>
+
+    <div class="showcase-body">
+        <div class="showcase-main">
+            <h2>项目概述</h2>
+            <p>DataViz Dashboard 是一个面向企业 BI 场景的低代码数据可视化平台。核心设计理念是 <strong>Schema 驱动</strong>：所有看板配置（布局、组件、数据源绑定、图表类型）均以 JSON Schema 形式存储，前后端完全解耦。前端通过解析 Schema 动态渲染 ECharts 图表，后端通过通用数据桥接层归一化异构数据源（MySQL / PostgreSQL / SQLite / HTTP API）的查询结果。</p>
+
+            <h3>平台架构</h3>
+            <div class="screenshot-box">
+                <div class="screenshot-header"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                <div class="screenshot-body">
+                    <span style="color:var(--color-primary)">Canvas Schema JSON</span>
+                    <span>{</span>
+                    <span>  "version": 1,</span>
+                    <span>  <span style="color:var(--color-primary)">"canvas"</span>: { "cols": 12, "rowHeight": 80 },</span>
+                    <span>  <span style="color:var(--color-primary)">"components"</span>: [</span>
+                    <span>    {</span>
+                    <span>      "id": "comp_001", <span style="color:#20bf6b">"type": "echarts_line"</span>,</span>
+                    <span>      "title": "月度销售趋势",</span>
+                    <span>      "layout": { "x": 0, "y": 0, "w": 8, "h": 5 },</span>
+                    <span>      "datasource_id": 1,</span>
+                    <span>      "query_config": { "sql": "SELECT ..." },</span>
+                    <span>      "chart_config": { "xAxis": "month", "series": [...] }</span>
+                    <span>    }</span>
+                    <span>  ]</span>
+                    <span>}</span>
+                </div>
+            </div>
+
+            <h3>核心功能</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="f-icon">&#128202;</div>
+                    <h4>Schema 驱动渲染</h4>
+                    <p>看板布局、组件、数据绑定全部通过 JSON Schema 描述，前端动态解析渲染，无需硬编码。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128279;</div>
+                    <h4>通用数据桥接</h4>
+                    <p>一行 SQL 或一个 URL 即可接入数据。支持 MySQL、PostgreSQL、SQLite、HTTP API 四种数据源类型，自动归一化为 ECharts 标准格式。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#127922;</div>
+                    <h4>拖拽搭建器</h4>
+                    <p>基于 GridStack.js 的所见即所得画布：拖拽调整组件位置和尺寸、右侧面板配置数据源和图表参数、JSON 编辑器实时预览 Schema。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#9204;</div>
+                    <h4>版本回滚</h4>
+                    <p>每次保存自动生成版本快照，支持查看历史版本并一键回滚到任意历史状态。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128274;</div>
+                    <h4>JWT 认证</h4>
+                    <p>完整的用户注册/登录体系，所有数据 API 通过 Bearer Token 鉴权保护。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#127760;</div>
+                    <h4>已上线部署</h4>
+                    <p>通过 gunicorn + PythonAnywhere 部署到生产环境，支持 HTTPS 访问。</p>
+                </div>
+            </div>
+
+            <h3>技术亮点</h3>
+            <ul>
+                <li><strong>连接池管理</strong>：MySQL 数据源使用 DBUtils PooledDB 连接池，maxconnections=6，线程安全复用</li>
+                <li><strong>SQLite row_factory</strong>：使用 sqlite3.Row 实现字典游标，保证与 MySQL DictCursor 输出格式统一</li>
+                <li><strong>HTTP API 自适应</strong>：自动识别 data/result/results/records/rows 等多种 JSON 包裹格式</li>
+                <li><strong>暗色主题</strong>：全站深色主题（#0a0f1d），ECharts dark 主题 + CSS backdrop-filter 毛玻璃效果</li>
+                <li><strong>响应式布局</strong>：CSS Grid 12 列网格 + GridStack.js 响应式列数调整</li>
+                <li><strong>应用工厂模式</strong>：Flask create_app() 工厂函数，支持多环境配置切换</li>
+            </ul>
+
+            <h3>演示看板</h3>
+            <p>平台内置 4 套演示看板，覆盖典型业务场景：</p>
+            <ul>
+                <li><strong>电商销售数据大盘</strong> &mdash; 4 个 KPI 数值卡 + 折线图（月度趋势）+ 饼图（品类占比）</li>
+                <li><strong>服务器集群监控</strong> &mdash; 6 个状态卡片 + 分组柱状图（CPU/内存/磁盘对比）</li>
+                <li><strong>用户增长分析</strong> &mdash; 4 个汇总卡片 + 堆叠柱状图 + 渠道分布饼图</li>
+                <li><strong>GitHub 项目数据</strong> &mdash; HTTP API 数据源接入示例</li>
+            </ul>
+        </div>
+
+        <aside class="showcase-sidebar">
+            <div class="sidebar-card">
+                <h4>项目信息</h4>
+                <div class="stat-row"><span class="stat-label">类型</span><span class="stat-value">全栈 Web 应用</span></div>
+                <div class="stat-row"><span class="stat-label">状态</span><span class="stat-value" style="color:#20bf6b">已上线</span></div>
+                <div class="stat-row"><span class="stat-label">上线平台</span><span class="stat-value">PythonAnywhere</span></div>
+                <div class="stat-row"><span class="stat-label">开发周期</span><span class="stat-value">2 周</span></div>
+                <div class="stat-row"><span class="stat-label">代码量</span><span class="stat-value">~2000 行</span></div>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>快速链接</h4>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <a href="https://lzn.pythonanywhere.com" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;text-align:center">在线演示</a>
+                    <a href="https://lzn.pythonanywhere.com/builder" target="_blank" rel="noopener" class="btn btn-glass" style="width:100%;text-align:center">搭建器</a>
+                    <a href="https://lzn.pythonanywhere.com/view/1" target="_blank" rel="noopener" class="btn btn-glass" style="width:100%;text-align:center">查看 Demo 看板</a>
+                    <a href="https://github.com/lzn956827063-create/dataviz-dashboard" target="_blank" rel="noopener" class="btn btn-glass" style="width:100%;text-align:center">GitHub 仓库</a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

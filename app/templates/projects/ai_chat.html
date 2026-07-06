@@ -1,0 +1,822 @@
+{% extends "base.html" %}
+{% block title %}AI 智能工作台 — 项目演示{% endblock %}
+{% block description %}多功能 AI 工作台：智能对话、文件分析、简历优化、代码审查{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+/* ===== AI Workspace Layout ===== */
+.ai-workspace {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--nav-height) - 80px);
+}
+
+.workspace-header {
+    text-align: center;
+    margin-bottom: var(--space-4);
+}
+
+.workspace-header h1 { font-size: var(--font-size-2xl); margin-bottom: 4px; }
+.workspace-header p { color: var(--color-text-secondary); font-size: var(--font-size-sm); }
+
+/* Mode tabs */
+.mode-tabs {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-3);
+}
+
+.mode-tab {
+    padding: var(--space-2) var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mode-tab:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.mode-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+.mode-panel { display: none; flex: 1; overflow: hidden; }
+.mode-panel.active { display: flex; flex-direction: column; }
+
+/* ===== Chat Panel ===== */
+.chat-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.chat-message {
+    display: flex;
+    gap: var(--space-3);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.chat-message.user { flex-direction: row-reverse; }
+
+.chat-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+}
+.chat-message.user .chat-avatar { background: var(--color-primary); }
+.chat-message.assistant .chat-avatar { background: var(--color-bg-tertiary); }
+
+.chat-bubble {
+    max-width: 75%;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    line-height: 1.7;
+    font-size: var(--font-size-sm);
+}
+
+.chat-message.user .chat-bubble {
+    background: var(--color-primary); color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-message.assistant .chat-bubble {
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    border-bottom-left-radius: 4px;
+}
+
+.chat-bubble pre {
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    overflow-x: auto;
+    margin: var(--space-2) 0;
+    font-size: 0.85em;
+}
+.chat-bubble code { font-size: 0.85em; }
+.chat-bubble pre code { background: none; padding: 0; }
+.chat-bubble h1, .chat-bubble h2, .chat-bubble h3 { font-size: 1em; margin: 8px 0 4px; }
+.chat-bubble ul, .chat-bubble ol { padding-left: 1.2em; margin: 4px 0; }
+.chat-bubble li { margin-bottom: 2px; }
+.chat-bubble strong { color: var(--color-accent); }
+.chat-bubble table { font-size: 0.85em; }
+.chat-bubble th, .chat-bubble td { padding: 2px 8px; }
+
+/* Typing */
+.typing-indicator {
+    display: flex; gap: 4px; padding: var(--space-2) 0;
+}
+.typing-indicator span {
+    width: 8px; height: 8px;
+    background: var(--color-text-muted);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+@keyframes bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
+
+/* Input area */
+.chat-input-area {
+    display: flex; gap: var(--space-3); align-items: flex-end;
+}
+.chat-input-area textarea {
+    flex: 1;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: inherit; font-size: var(--font-size-sm);
+    resize: none; background: var(--color-bg); color: var(--color-text);
+    min-height: 48px; max-height: 120px;
+}
+.chat-input-area textarea:focus {
+    outline: none; border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.chat-error {
+    background: var(--color-danger); color: #fff;
+    padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs); text-align: center;
+    margin-bottom: var(--space-2); display: none;
+}
+
+/* Quick suggestions */
+.quick-row {
+    display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-3);
+}
+.quick-chip {
+    font-size: var(--font-size-xs); padding: 4px 12px;
+    border: 1px solid var(--color-border); border-radius: var(--radius-full);
+    background: var(--color-bg); color: var(--color-text-secondary);
+    cursor: pointer; transition: all var(--transition-fast);
+}
+.quick-chip:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); }
+
+/* ===== File Analysis Panel ===== */
+.file-layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: var(--space-4);
+    flex: 1;
+    overflow: hidden;
+}
+
+.file-upload-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    overflow-y: auto;
+}
+
+.upload-zone {
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: var(--color-bg-secondary);
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.upload-zone .upload-icon { font-size: 3rem; margin-bottom: var(--space-2); }
+.upload-zone h3 { font-size: var(--font-size-sm); margin-bottom: 4px; }
+.upload-zone p { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+.upload-instructions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.instruction-chip {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    background: var(--color-bg);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.instruction-chip:hover, .instruction-chip.active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.file-info {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    font-size: var(--font-size-xs);
+    display: none;
+}
+
+.file-info .file-name { font-weight: 600; }
+.file-info .file-meta { color: var(--color-text-muted); margin-top: 4px; }
+
+.file-result-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.file-result-header {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-bg-secondary);
+}
+
+.file-result-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    line-height: 1.7;
+    font-size: var(--font-size-sm);
+}
+
+.file-result-content pre {
+    background: var(--color-bg-secondary);
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+}
+
+/* ===== Resume Panel ===== */
+.resume-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+    flex: 1;
+    overflow: hidden;
+}
+
+.resume-input-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    overflow-y: auto;
+}
+
+.resume-input-panel textarea {
+    flex: 1;
+    min-height: 300px;
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-sm);
+    line-height: 1.7;
+    resize: vertical;
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.resume-actions-row {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.resume-result-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.resume-result-header {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--color-bg-secondary);
+}
+
+.resume-result-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    line-height: 1.7;
+    font-size: var(--font-size-sm);
+}
+
+/* Copy toast */
+.copy-toast {
+    position: fixed;
+    top: calc(var(--nav-height) + 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-success);
+    color: #fff;
+    padding: var(--space-2) var(--space-5);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    z-index: 2000;
+    animation: toastInOut 2s ease forwards;
+}
+@keyframes toastInOut {
+    0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.empty-chat {
+    text-align: center;
+    padding: var(--space-10) var(--space-4);
+    color: var(--color-text-muted);
+}
+.empty-chat .empty-icon { font-size: 3rem; margin-bottom: var(--space-3); }
+
+@media (max-width: 768px) {
+    .ai-workspace { height: auto; min-height: 80vh; }
+    .file-layout { grid-template-columns: 1fr; }
+    .resume-layout { grid-template-columns: 1fr; }
+    .chat-bubble { max-width: 90%; }
+    .mode-tabs { overflow-x: auto; }
+    .mode-tab { white-space: nowrap; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="ai-workspace">
+    <header class="workspace-header">
+        <h1>🤖 AI 智能工作台</h1>
+        <p>基于阿里云百炼大模型 · 智能对话 · 文件分析 · 简历优化 · 代码审查</p>
+    </header>
+
+    <!-- Mode Tabs -->
+    <nav class="mode-tabs">
+        <button class="mode-tab active" data-mode="chat">💬 智能对话</button>
+        <button class="mode-tab" data-mode="file">📁 文件分析</button>
+        <button class="mode-tab" data-mode="resume">📄 简历优化</button>
+    </nav>
+
+    <!-- ======================== Chat Mode ======================== -->
+    <div class="mode-panel active" id="panel-chat">
+        <div class="chat-layout">
+            <div class="chat-error" id="chat-error"></div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="empty-chat">
+                    <div class="empty-icon">💬</div>
+                    <h3>AI 智能对话</h3>
+                    <p>提问任何问题，AI 将为你解答</p>
+                </div>
+            </div>
+            <div class="quick-row" id="quick-row">
+                <span class="quick-chip" data-text="用Python写一个快速排序算法，加上注释">Python快速排序</span>
+                <span class="quick-chip" data-text="帮我分析一下当前前端框架的发展趋势">前端趋势分析</span>
+                <span class="quick-chip" data-text="写一份SQL查询，找出表中重复的数据">SQL去重查询</span>
+                <span class="quick-chip" data-text="解释一下Docker和Kubernetes的关系">Docker vs K8s</span>
+                <span class="quick-chip" data-text="帮我优化这段简历描述：负责网站后端开发，使用Python">优化简历描述</span>
+            </div>
+            <div class="chat-input-area">
+                <textarea id="chat-input" placeholder="输入你的问题... (Shift+Enter 换行)" rows="1" maxlength="5000"></textarea>
+                <button id="btn-send" class="btn btn-primary">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== File Mode ======================== -->
+    <div class="mode-panel" id="panel-file">
+        <div class="file-layout">
+            <div class="file-upload-panel">
+                <h3 style="font-size:var(--font-size-sm);">📁 上传文件</h3>
+
+                <!-- 拖拽上传区域 -->
+                <div class="upload-zone" id="upload-zone">
+                    <div class="upload-icon">📤</div>
+                    <h3>点击上传或拖拽文件到此处</h3>
+                    <p>支持 txt · md · py · js · pdf · docx · csv · log 等格式</p>
+                    <p style="font-size:11px;color:var(--color-text-muted);">最大 5MB</p>
+                    <input type="file" id="file-input" style="display:none;" accept=".txt,.md,.py,.js,.ts,.html,.css,.json,.xml,.yaml,.yml,.csv,.log,.java,.go,.rs,.c,.cpp,.h,.sh,.bat,.pdf,.docx,.doc">
+                </div>
+
+                <!-- 文件信息 -->
+                <div class="file-info" id="file-info">
+                    <div class="file-name" id="file-name"></div>
+                    <div class="file-meta" id="file-meta"></div>
+                </div>
+
+                <!-- 分析模式 -->
+                <h4 style="font-size:var(--font-size-xs);color:var(--color-text-muted);">分析模式</h4>
+                <div class="upload-instructions" id="instruction-chips">
+                    <span class="instruction-chip active" data-instruction="分析">🔍 分析</span>
+                    <span class="instruction-chip" data-instruction="简历优化">📄 简历优化</span>
+                    <span class="instruction-chip" data-instruction="代码审查">🔎 代码审查</span>
+                    <span class="instruction-chip" data-instruction="总结">📝 总结</span>
+                    <span class="instruction-chip" data-instruction="翻译">🌐 翻译</span>
+                </div>
+
+                <!-- 自定义指令 -->
+                <div class="form-group">
+                    <label style="font-size:var(--font-size-xs);color:var(--color-text-muted);">自定义指令（可选）</label>
+                    <input type="text" class="form-input" id="custom-instruction" placeholder="告诉AI你想做什么...">
+                </div>
+
+                <button class="btn btn-primary w-100" id="btn-analyze-file">🚀 开始分析</button>
+            </div>
+
+            <div class="file-result-panel">
+                <div class="file-result-header">
+                    <span>📊 分析结果</span>
+                    <button class="btn btn-sm btn-outline" id="btn-copy-file-result">📋 复制</button>
+                </div>
+                <div class="file-result-content" id="file-result-content">
+                    <p style="color:var(--color-text-muted);text-align:center;padding:var(--space-8);">上传文件后点击「开始分析」</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== Resume Mode ======================== -->
+    <div class="mode-panel" id="panel-resume">
+        <div class="resume-layout">
+            <div class="resume-input-panel">
+                <h3 style="font-size:var(--font-size-sm);">📄 粘贴你的简历或经历描述</h3>
+
+                <!-- 快捷操作 -->
+                <div class="resume-actions-row">
+                    <button class="btn btn-sm btn-outline ai-resume-action" data-action="polish">✨ 润色优化</button>
+                    <button class="btn btn-sm btn-outline ai-resume-action" data-action="proofread">🔍 纠错校对</button>
+                    <button class="btn btn-sm btn-outline ai-resume-action" data-action="expand">📈 扩展丰富</button>
+                    <button class="btn btn-sm btn-outline ai-resume-action" data-action="tailor-context">🎯 匹配岗位</button>
+                </div>
+
+                <!-- 岗位上下文（匹配岗位时显示） -->
+                <div class="form-group" id="tailor-context-group" style="display:none;">
+                    <label style="font-size:var(--font-size-xs);">目标岗位描述</label>
+                    <textarea class="form-input" id="tailor-context-input" rows="3" placeholder="粘贴目标岗位的 JD 描述..."></textarea>
+                </div>
+
+                <textarea id="resume-input" placeholder="在此粘贴你的简历内容、工作经历或项目描述...&#10;&#10;例如：&#10;我负责公司电商平台的后端开发，使用Python和Django框架，管理数据库和API接口。"></textarea>
+
+                <!-- 结果操作 -->
+                <div class="resume-actions-row" style="margin-top:var(--space-2);">
+                    <button class="btn btn-sm btn-outline" id="btn-replace-resume">⬅️ 用结果替换输入</button>
+                    <button class="btn btn-sm btn-outline" id="btn-copy-resume">📋 复制结果</button>
+                </div>
+            </div>
+
+            <div class="resume-result-panel">
+                <div class="resume-result-header">
+                    <span>🪄 优化结果</span>
+                    <span id="resume-status" style="font-size:var(--font-size-xs);color:var(--color-text-muted);"></span>
+                </div>
+                <div class="resume-result-content" id="resume-result-content">
+                    <p style="color:var(--color-text-muted);text-align:center;padding:var(--space-8);">输入简历内容后点击上方操作按钮</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="copy-toast" class="copy-toast" style="display:none;">已复制到剪贴板 ✓</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Marked.js for rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/lib/highlight.min.js"></script>
+<script>
+(function() {
+    // ============ Mode switching ============
+    document.querySelectorAll('.mode-tab').forEach(function(tab) {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.mode-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.mode-panel').forEach(function(p) { p.classList.remove('active'); });
+            tab.classList.add('active');
+            document.getElementById('panel-' + tab.dataset.mode).classList.add('active');
+        });
+    });
+
+    // ============ Markdown config ============
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({ breaks: true, gfm: true });
+        if (typeof hljs !== 'undefined') {
+            marked.setOptions({
+                highlight: function(code, lang) {
+                    if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
+                    return hljs.highlightAuto(code).value;
+                }
+            });
+        }
+    }
+
+    // ============ Helpers ============
+    function escapeHtml(str) {
+        var div = document.createElement('div'); div.textContent = str; return div.innerHTML;
+    }
+
+    function showToast(msg) {
+        var t = document.getElementById('copy-toast');
+        t.textContent = msg; t.style.display = 'block';
+        t.style.animation = 'none'; t.offsetHeight; t.style.animation = '';
+        setTimeout(function() { t.style.display = 'none'; }, 2000);
+    }
+
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(function() { showToast('已复制到剪贴板 ✓'); });
+    }
+
+    // ============ Chat ============
+    var chatMessagesEl = document.getElementById('chat-messages');
+    var chatInputEl = document.getElementById('chat-input');
+    var chatErrorEl = document.getElementById('chat-error');
+    var chatHistory = [];
+    var isStreaming = false;
+
+    function sendChat() {
+        var text = chatInputEl.value.trim();
+        if (!text || isStreaming) return;
+        chatInputEl.value = ''; chatInputEl.style.height = 'auto';
+        isStreaming = true;
+        document.getElementById('btn-send').disabled = true;
+        document.getElementById('btn-send').textContent = '发送中...';
+        chatErrorEl.style.display = 'none';
+
+        var emptyEl = chatMessagesEl.querySelector('.empty-chat');
+        if (emptyEl) emptyEl.remove();
+
+        addChatMessage('user', text);
+        chatHistory.push({ role: 'user', content: text });
+        var loadingId = addTyping();
+
+        fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            removeTyping(loadingId);
+            if (data.error) {
+                chatErrorEl.textContent = data.error;
+                chatErrorEl.style.display = 'block';
+                if (data.fallback) addChatMessage('assistant', data.fallback);
+            } else {
+                chatHistory.push({ role: 'assistant', content: data.reply });
+                addChatMessage('assistant', data.reply);
+            }
+        })
+        .catch(function() {
+            removeTyping(loadingId);
+            chatErrorEl.textContent = '网络错误，请重试';
+            chatErrorEl.style.display = 'block';
+        })
+        .finally(function() {
+            isStreaming = false;
+            document.getElementById('btn-send').disabled = false;
+            document.getElementById('btn-send').textContent = '发送';
+            chatInputEl.focus();
+        });
+    }
+
+    function addChatMessage(role, content) {
+        var div = document.createElement('div');
+        div.className = 'chat-message ' + role;
+        var avatar = role === 'user' ? '👤' : '🤖';
+        var bubbleContent = role === 'assistant' ? (typeof marked !== 'undefined' ? marked.parse(content) : escapeHtml(content)) : escapeHtml(content);
+        div.innerHTML =
+            '<div class="chat-avatar">' + avatar + '</div>' +
+            '<div class="chat-bubble">' + bubbleContent + '</div>';
+        chatMessagesEl.appendChild(div);
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    function addTyping() {
+        var id = 'typing-' + Date.now();
+        var div = document.createElement('div');
+        div.className = 'chat-message assistant'; div.id = id;
+        div.innerHTML = '<div class="chat-avatar">🤖</div><div class="chat-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+        chatMessagesEl.appendChild(div);
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+        return id;
+    }
+
+    function removeTyping(id) {
+        var el = document.getElementById(id); if (el) el.remove();
+    }
+
+    document.getElementById('btn-send').addEventListener('click', sendChat);
+    chatInputEl.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    });
+    chatInputEl.addEventListener('input', function() {
+        this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Quick suggestions
+    document.querySelectorAll('#quick-row .quick-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            chatInputEl.value = this.dataset.text; sendChat();
+        });
+    });
+
+    // ============ File Analysis ============
+    var currentFile = null;
+    var currentInstruction = '分析';
+
+    var uploadZone = document.getElementById('upload-zone');
+    var fileInput = document.getElementById('file-input');
+
+    uploadZone.addEventListener('click', function() { fileInput.click(); });
+    uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('drag-over'); });
+    uploadZone.addEventListener('dragleave', function() { this.classList.remove('drag-over'); });
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault(); this.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+        if (this.files.length) handleFile(this.files[0]);
+    });
+
+    function handleFile(file) {
+        currentFile = file;
+        var ext = file.name.split('.').pop().toLowerCase();
+        var sizeMB = (file.size / 1024 / 1024).toFixed(2);
+        document.getElementById('file-name').textContent = file.name;
+        document.getElementById('file-meta').textContent = ext.toUpperCase() + ' · ' + sizeMB + ' MB';
+        document.getElementById('file-info').style.display = 'block';
+
+        // Auto-select instruction based on extension
+        if (['py','js','ts','java','go','rs','c','cpp','sh'].includes(ext)) {
+            setInstruction('代码审查');
+        } else if (['pdf','docx','doc'].includes(ext)) {
+            setInstruction('分析');
+        }
+    }
+
+    function setInstruction(val) {
+        currentInstruction = val;
+        document.querySelectorAll('#instruction-chips .instruction-chip').forEach(function(c) {
+            c.classList.toggle('active', c.dataset.instruction === val);
+        });
+    }
+
+    document.querySelectorAll('#instruction-chips .instruction-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() { setInstruction(this.dataset.instruction); });
+    });
+
+    document.getElementById('btn-analyze-file').addEventListener('click', function() {
+        if (!currentFile) { showToast('请先选择文件'); return; }
+
+        var customInst = document.getElementById('custom-instruction').value.trim();
+        var instruction = customInst || currentInstruction;
+
+        var btn = this;
+        btn.disabled = true; btn.textContent = '⏳ 分析中...';
+
+        var formData = new FormData();
+        formData.append('file', currentFile);
+        formData.append('instruction', instruction);
+
+        var resultEl = document.getElementById('file-result-content');
+        resultEl.innerHTML = '<p style="text-align:center;padding:var(--space-8);">⏳ AI 正在分析文件...</p>';
+
+        fetch('/api/ai/analyze-file', { method: 'POST', body: formData })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    resultEl.innerHTML = '<p style="color:var(--color-danger);">❌ ' + escapeHtml(data.error) + '</p>';
+                } else {
+                    resultEl.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.reply) : '<pre>' + escapeHtml(data.reply) + '</pre>';
+                }
+            })
+            .catch(function() {
+                resultEl.innerHTML = '<p style="color:var(--color-danger);">网络错误</p>';
+            })
+            .finally(function() {
+                btn.disabled = false; btn.textContent = '🚀 开始分析';
+            });
+    });
+
+    document.getElementById('btn-copy-file-result').addEventListener('click', function() {
+        var text = document.getElementById('file-result-content').textContent.trim();
+        if (text) copyText(text);
+    });
+
+    // ============ Resume Optimizer ============
+    var resumeInput = document.getElementById('resume-input');
+    var resumeResult = document.getElementById('resume-result-content');
+    var resumeStatus = document.getElementById('resume-status');
+
+    function optimizeResume(action) {
+        var text = resumeInput.value.trim();
+        if (!text) { showToast('请先输入简历内容'); return; }
+
+        var context = '';
+        if (action === 'tailor-context') {
+            context = document.getElementById('tailor-context-input').value.trim();
+            document.getElementById('tailor-context-group').style.display = 'block';
+            if (!context) { showToast('请输入目标岗位描述'); return; }
+            action = 'tailor';
+        }
+
+        resumeStatus.textContent = '⏳ 优化中...';
+        resumeResult.innerHTML = '<p style="text-align:center;padding:var(--space-6);">⏳ AI 正在优化...</p>';
+
+        var body = { text: text, action: action.replace('-context', '') };
+        if (context) body.context = context;
+
+        fetch('/api/ai/optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.error) {
+                resumeResult.innerHTML = '<p style="color:var(--color-danger);">❌ ' + escapeHtml(data.error) + '</p>';
+                resumeStatus.textContent = '失败';
+            } else {
+                resumeResult.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.optimized_text) : '<pre>' + escapeHtml(data.optimized_text) + '</pre>';
+                resumeStatus.textContent = '✓ 完成';
+            }
+        })
+        .catch(function() {
+            resumeResult.innerHTML = '<p style="color:var(--color-danger);">网络错误</p>';
+            resumeStatus.textContent = '失败';
+        });
+    }
+
+    document.querySelectorAll('.ai-resume-action').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var action = this.dataset.action;
+            if (action === 'tailor-context') {
+                document.getElementById('tailor-context-group').style.display = 'block';
+            }
+            optimizeResume(action);
+        });
+    });
+
+    document.getElementById('btn-replace-resume').addEventListener('click', function() {
+        var text = resumeResult.textContent.trim();
+        if (text && text !== '输入简历内容后点击上方操作按钮') {
+            resumeInput.value = text;
+            showToast('已替换输入内容 ✓');
+        }
+    });
+
+    document.getElementById('btn-copy-resume').addEventListener('click', function() {
+        var text = resumeResult.textContent.trim();
+        if (text) copyText(text);
+    });
+})();
+</script>
+{% endblock %}

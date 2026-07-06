@@ -1,0 +1,312 @@
+<!--
+Markdown 简历生成器 — Markdown Resume Builder
+在线编辑 Markdown，实时预览，支持多套模板切换，一键导出 PDF。
+-->
+{% extends "base.html" %}
+{% block title %}Markdown 简历生成器{% endblock %}
+{% block description %}在线 Markdown 简历编辑器，实时预览、多模板切换、一键导出 PDF{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+/* ================================================================
+   Resume Builder — full-page layout
+   ================================================================ */
+.rb-page {
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - var(--nav-height));
+    display: flex;
+    flex-direction: column;
+}
+
+.rb-hero {
+    text-align: center;
+    padding: var(--space-8) var(--space-6) var(--space-4);
+}
+.rb-hero .badge {
+    display: inline-block;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+.rb-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-2); }
+.rb-hero p { color: var(--color-text-secondary); max-width: 600px; margin: 0 auto; }
+
+/* Toolbar */
+.rb-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-6);
+    flex-wrap: wrap;
+}
+.rb-template-select {
+    padding: 8px 16px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text);
+    font-size: var(--font-size-sm);
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+.rb-template-select option { background: #0f1525; color: #e0e4f0; }
+
+/* Main split */
+.rb-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-5);
+    flex: 1;
+    padding: 0 var(--space-6) var(--space-8);
+    max-width: var(--max-width);
+    margin: 0 auto;
+    width: 100%;
+    min-height: 500px;
+}
+
+.rb-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-glass);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.rb-panel-header {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* Editor */
+.rb-editor-wrap { flex: 1; position: relative; }
+.rb-editor {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    line-height: 1.8;
+    padding: var(--space-5);
+    resize: none;
+    outline: none;
+}
+.rb-editor::placeholder { color: var(--color-text-muted); }
+
+/* Preview */
+.rb-preview-wrap {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-5);
+    background: white;
+    color: #212529;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+/* Template styles inside preview — always light */
+.rb-preview-wrap h1 { font-size: 1.8rem; margin-bottom: 0.25em; color: #111; }
+.rb-preview-wrap h2 { font-size: 1.3rem; margin: 1.2em 0 0.5em; color: #333; border-bottom: 2px solid #4361ee; padding-bottom: 0.2em; }
+.rb-preview-wrap h3 { font-size: 1.1rem; margin: 0.8em 0 0.4em; color: #444; }
+.rb-preview-wrap p { margin-bottom: 0.5em; }
+.rb-preview-wrap ul, .rb-preview-wrap ol { padding-left: 1.5em; margin-bottom: 0.5em; }
+.rb-preview-wrap li { margin-bottom: 0.2em; }
+.rb-preview-wrap a { color: #4361ee; }
+.rb-preview-wrap hr { border: none; border-top: 1px solid #ddd; margin: 0.8em 0; }
+.rb-preview-wrap blockquote { border-left: 4px solid #4361ee; padding-left: 1em; color: #555; margin: 0.5em 0; }
+
+/* Template: Modern — adds accent color headers + card-like experience */
+.rb-preview-wrap.tmpl-modern h1 { color: #4361ee; border-bottom: 3px solid #4361ee; padding-bottom: 0.3em; }
+.rb-preview-wrap.tmpl-modern h2 { background: #f0f3ff; padding: 6px 12px; border-radius: 4px; border-bottom: none; }
+
+/* Template: Minimal — smaller, tighter spacing */
+.rb-preview-wrap.tmpl-minimal { font-size: 0.85rem; line-height: 1.6; }
+.rb-preview-wrap.tmpl-minimal h1 { font-size: 1.5rem; }
+.rb-preview-wrap.tmpl-minimal h2 { font-size: 1.1rem; border-bottom-width: 1px; margin-top: 1em; }
+
+@media (max-width: 768px) {
+    .rb-main { grid-template-columns: 1fr; }
+    .rb-panel { min-height: 350px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rb-page">
+
+    <header class="rb-hero">
+        <div class="badge">文档工具</div>
+        <h1>Markdown 简历生成器</h1>
+        <p>左侧编写 Markdown 简历，右侧实时预览，选择模板后一键导出为 PDF</p>
+    </header>
+
+    <div class="rb-toolbar">
+        <select class="rb-template-select" id="rb-template">
+            <option value="professional">专业风格</option>
+            <option value="modern">现代风格</option>
+            <option value="minimal">极简风格</option>
+        </select>
+        <button class="btn btn-glass btn-sm" id="rb-clear">清空</button>
+        <button class="btn btn-glass btn-sm" id="rb-sample">示例简历</button>
+        <button class="btn btn-primary btn-sm" id="rb-export">导出 PDF</button>
+    </div>
+
+    <div class="rb-main">
+        <!-- Editor Panel -->
+        <div class="rb-panel">
+            <div class="rb-panel-header">Markdown 编辑器</div>
+            <div class="rb-editor-wrap">
+                <textarea class="rb-editor" id="rb-editor" placeholder="在此编写你的 Markdown 简历..."></textarea>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="rb-panel">
+            <div class="rb-panel-header">实时预览</div>
+            <div class="rb-preview-wrap professional" id="rb-preview"></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.4/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js"></script>
+<script>
+(function () {
+    var editor = document.getElementById('rb-editor');
+    var preview = document.getElementById('rb-preview');
+    var templateSelect = document.getElementById('rb-template');
+
+    // ── Default sample resume ────────────────────────────────────
+    var sample = [
+        '# 梁智能',
+        '',
+        '计算机科学与技术 学士 | 广州城市理工学院 | 2026 届',
+        '',
+        '> 热爱 Web 开发与开源的应届毕业生，具备独立开发完整 Web 应用的能力。',
+        '',
+        '---',
+        '',
+        '## 技能',
+        '',
+        '- **语言**：Python、JavaScript、Go、SQL',
+        '- **后端**：Flask、REST API、SQLite',
+        '- **前端**：HTML/CSS、ECharts、Bootstrap 5',
+        '- **运维**：Linux、Docker、Nginx、SNMP',
+        '- **工具**：Git、VS Code、Postman',
+        '',
+        '## 项目经历',
+        '',
+        '### 企业内网实时监控系统',
+        '',
+        '毕业设计 | 2025.09 – 2026.06',
+        '',
+        '- 基于 Flask + SNMP 协议构建的企业级网络监控平台',
+        '- 实现设备自动发现、延迟/CPU/内存实时采集、SNMP 交换机端口流量监控',
+        '- 支持异常检测告警、历史数据 CSV 导出、设备别名管理',
+        '- 技术栈：Python、Flask、SQLite、Chart.js、Bootstrap 5',
+        '',
+        '### AI 智能工作台',
+        '',
+        '个人项目 | 2025.06 – 2025.08',
+        '',
+        '- 基于阿里云百炼大模型的多功能 AI 工作平台',
+        '- 支持智能对话、文件上传分析、简历优化、代码审查等场景',
+        '- 前端支持 Markdown 渲染 + 代码语法高亮',
+        '- 技术栈：Python、Flask、JavaScript、阿里云 DashScope API',
+        '',
+        '## 教育背景',
+        '',
+        '### 广州城市理工学院',
+        '',
+        '计算机科学与技术 学士 | 2022.09 – 2026.06',
+        '',
+        '- 主修课程：数据结构与算法、操作系统、计算机网络、数据库原理、软件工程、Web 开发技术',
+        '- 毕业设计：企业内网实时监控系统',
+        '',
+        '## 证书 & 其他',
+        '',
+        '- 英语 CET-4 / CET-6',
+        '- GitHub 开源贡献者',
+        '- 技术博客作者',
+    ].join('\n');
+
+    if (!editor.value.trim()) {
+        editor.value = sample;
+    }
+
+    // ── Markdown config ──────────────────────────────────────────
+    marked.setOptions({ breaks: true, gfm: true });
+
+    function renderPreview() {
+        var md = editor.value;
+        preview.innerHTML = marked.parse(md);
+    }
+    renderPreview();
+    editor.addEventListener('input', renderPreview);
+
+    // ── Template switch ──────────────────────────────────────────
+    templateSelect.addEventListener('change', function () {
+        preview.className = 'rb-preview-wrap ' + templateSelect.value;
+    });
+
+    // ── Clear ────────────────────────────────────────────────────
+    document.getElementById('rb-clear').addEventListener('click', function () {
+        if (confirm('确定要清空编辑器内容吗？')) {
+            editor.value = '';
+            renderPreview();
+        }
+    });
+
+    // ── Sample ───────────────────────────────────────────────────
+    document.getElementById('rb-sample').addEventListener('click', function () {
+        editor.value = sample;
+        renderPreview();
+    });
+
+    // ── Export PDF ───────────────────────────────────────────────
+    document.getElementById('rb-export').addEventListener('click', function () {
+        var btn = document.getElementById('rb-export');
+        btn.textContent = '导出中...';
+        btn.disabled = true;
+
+        var opt = {
+            margin: [10, 10, 10, 10],
+            filename: 'resume.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+
+        html2pdf().set(opt).from(preview).save().then(function () {
+            btn.textContent = '导出 PDF';
+            btn.disabled = false;
+        }).catch(function () {
+            btn.textContent = '导出 PDF';
+            btn.disabled = false;
+        });
+    });
+})();
+</script>
+{% endblock %}

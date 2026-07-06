@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} — 博客{% endblock %}
+{% block description %}{{ post.excerpt or post.title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/blog.css') }}">
+<!-- highlight.js 代码高亮 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/styles/github.min.css" id="hljs-light">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/styles/github-dark.min.css" id="hljs-dark" disabled>
+{% endblock %}
+
+{% block content %}
+<article class="blog-detail">
+    <header class="detail-header">
+        {% if post.category_name %}
+        <a href="/blog?category={{ post.category_slug }}" class="post-category">{{ post.category_name }}</a>
+        {% endif %}
+        <h1>{{ post.title }}</h1>
+        <div class="detail-meta">
+            <span>{{ post.created_at[:10] }}</span>
+            <span>{{ post.view_count }} 次阅读</span>
+            <span>{{ post.comment_count }} 条评论</span>
+        </div>
+    </header>
+
+    {% if post.cover_image %}
+    <div class="detail-cover">
+        <img src="{{ post.cover_image }}" alt="{{ post.title }}">
+    </div>
+    {% endif %}
+
+    <div class="detail-content">
+        {{ post.content_html | safe }}
+    </div>
+
+    <!-- 评论区 -->
+    <section class="comments-section" id="comments">
+        <h2>评论 ({{ comments | length }})</h2>
+
+        {% if comments %}
+        <div class="comments-list">
+            {% for comment in comments %}
+            <div class="comment-card">
+                <div class="comment-header">
+                    <strong>{{ comment.author_name }}</strong>
+                    <time>{{ comment.created_at[:10] }}</time>
+                </div>
+                <p class="comment-body">{{ comment.content }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-comments">暂无评论，来抢个沙发吧！</p>
+        {% endif %}
+
+        <!-- 评论表单 -->
+        <form method="POST" action="/blog/{{ post.slug }}/comment" class="comment-form">
+            <h3>发表评论</h3>
+            <div class="form-group">
+                <label for="author_name">昵称</label>
+                <input type="text" id="author_name" name="author_name" required maxlength="100" placeholder="你的昵称">
+            </div>
+            <div class="form-group">
+                <label for="content">评论内容</label>
+                <textarea id="content" name="content" required maxlength="2000" rows="4" placeholder="写下你的想法..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">发表评论</button>
+        </form>
+    </section>
+</article>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11.11.0/lib/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<script src="{{ url_for('static', filename='js/blog.js') }}"></script>
+{% endblock %}
