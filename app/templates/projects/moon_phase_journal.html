@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+{% block title %}月相日记 — 微信小程序{% endblock %}
+{% block description %}月相日记 Moon Phase Journal：基于自适应周期预测算法的女性生理健康微信小程序{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+.project-showcase {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.showcase-hero {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.showcase-hero .badge {
+    display: inline-block;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-3); }
+.showcase-hero p { color: var(--color-text-secondary); max-width: 700px; margin: 0 auto; font-size: var(--font-size-lg); line-height: 1.8; }
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-5);
+}
+
+.tech-tag {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hero-links {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-5);
+    flex-wrap: wrap;
+}
+
+.showcase-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.showcase-main h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.showcase-main h3 {
+    font-size: var(--font-size-lg);
+    margin: var(--space-5) 0 var(--space-3);
+    color: var(--color-primary);
+}
+
+.showcase-main p {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-main ul {
+    color: var(--color-text-secondary);
+    line-height: 1.9;
+    padding-left: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.showcase-main ul li { margin-bottom: var(--space-1); }
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.feature-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.feature-item .f-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.feature-item h4 { font-size: var(--font-size-base); margin-bottom: 4px; }
+.feature-item p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0; }
+
+/* Sidebar */
+.showcase-sidebar {
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+}
+
+.sidebar-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.sidebar-card h4 {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.sidebar-card .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+.sidebar-card .stat-row:last-child { border-bottom: none; }
+.sidebar-card .stat-label { color: var(--color-text-muted); }
+.sidebar-card .stat-value { color: var(--color-text); font-weight: 600; }
+
+.code-box {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin: var(--space-5) 0;
+}
+
+.code-box .code-header {
+    padding: 8px 14px;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    gap: 6px;
+}
+
+.code-box .dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-box .dot:nth-child(1) { background: #e74c3c; }
+.code-box .dot:nth-child(2) { background: #f7b731; }
+.code-box .dot:nth-child(3) { background: #20bf6b; }
+
+.code-box .code-body {
+    padding: var(--space-6);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .showcase-body { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .showcase-hero h1 { font-size: var(--font-size-2xl); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="project-showcase">
+    <header class="showcase-hero">
+        <span class="badge">WeChat Mini Program</span>
+        <h1>月相日记 Moon Phase Journal</h1>
+        <p>女性生理周期追踪微信原生小程序。基于用户历史数据自适应预测 — 简单移动平均 + 异常值过滤 + 加权趋势修正，以月相为主题隐喻女性身体节律，兼顾功能性与人文温度。</p>
+
+        <div class="tech-stack">
+            <span class="tech-tag">WeChat Mini Program</span>
+            <span class="tech-tag">WXS</span>
+            <span class="tech-tag">WXSS</span>
+            <span class="tech-tag">JavaScript</span>
+            <span class="tech-tag">Canvas 2D</span>
+            <span class="tech-tag">LocalStorage</span>
+            <span class="tech-tag">生物识别</span>
+        </div>
+
+        <div class="hero-links">
+            <a href="https://github.com/lzn956827063-create/moon-phase-journal" target="_blank" rel="noopener" class="btn btn-primary">源代码 &rarr;</a>
+        </div>
+    </header>
+
+    <div class="showcase-body">
+        <div class="showcase-main">
+            <h2>项目概述</h2>
+            <p>月相日记是一款面向女性用户的生理周期追踪微信小程序。核心设计理念是用 <strong>月相盈亏隐喻女性身体节律</strong> — 新月代表经期开始，满月代表排卵期高峰，将科技与人文结合，让健康追踪不再冰冷。</p>
+
+            <p>项目完全使用微信原生框架开发（不使用第三方 UI 库），所有组件从零手写，包括 Canvas 月相绘制器、自定义星历日历组件、动画过渡效果等。</p>
+
+            <h3>核心算法：自适应周期预测</h3>
+            <div class="code-box">
+                <div class="code-header"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+                <div class="code-body">
+                    <span style="color:var(--color-primary)">predict</span>(records, settings) → Prediction<br><br>
+                    <span style="color:#20bf6b">Step 1</span> 收集历史周期长度<br>
+                    <span style="color:#20bf6b">Step 2</span> 异常值过滤（丢弃 &lt; 60% 或 &gt; 140% 中位数的周期）<br>
+                    <span style="color:#20bf6b">Step 3</span> 滑动窗口 SMA（最近 2-6 个周期）<br>
+                    <span style="color:#20bf6b">Step 4</span> 加权移动平均趋势修正（±2 天）<br>
+                    <span style="color:#20bf6b">Step 5</span> 置信度计算（3 周期 → 0.3, 6+ → 0.825, 7+ → 1.0）<br>
+                    <span style="color:#20bf6b">Step 6</span> 构建日期→阶段映射表（覆盖 2 个周期）
+                </div>
+            </div>
+
+            <h3>功能特性</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="f-icon">&#127769;</div>
+                    <h4>Canvas 月相绘制</h4>
+                    <p>纯手写 Canvas 2D 代码，根据当前周期阶段实时绘制月相图形（新月/弦月/满月），作为首页核心视觉元素。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128197;</div>
+                    <h4>自定义星历日历</h4>
+                    <p>从零实现的日历组件，支持阴历阳历切换、标记生理周期日、预判排卵日与安全期，一目了然。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128274;</div>
+                    <h4>生物识别保护</h4>
+                    <p>集成 WeChat Soter 生物认证 API（指纹 + 面部识别），从后台切回前台时自动锁定，保护用户隐私。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128221;</div>
+                    <h4>每日日志记录</h4>
+                    <p>支持情绪、症状（腹痛/头痛/疲劳等）、体重、体温等多维度日常记录，数据本地持久化存储。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128293;</div>
+                    <h4>痛经舒缓工具包</h4>
+                    <p>内置穴位按摩指引、热敷计时器、舒缓音乐推荐等实用功能，帮助缓解经期不适。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128214;</div>
+                    <h4>诗意文学内容</h4>
+                    <p>根据当前周期阶段展示匹配的文学段落 — 从古典诗词到现代散文，为产品注入人文温度。</p>
+                </div>
+            </div>
+
+            <h3>技术架构</h3>
+            <ul>
+                <li><strong>纯原生开发</strong>：无任何第三方 UI 组件库，全部手写 WXML + WXSS + JS + Canvas</li>
+                <li><strong>模块化 utils 层</strong>：prediction.js（预测算法）、moon-renderer.js（Canvas 绘制）、storage.js（数据持久化）、cycle-calculator.js（阶段计算）</li>
+                <li><strong>自适应预测引擎</strong>：SMA 简单移动平均 + 异常值过滤（基于中位数 60%-140% 范围）+ WMA 加权趋势修正</li>
+                <li><strong>custom-tab-bar</strong>：自定义底部导航栏，与月相主题统一视觉风格</li>
+                <li><strong>组件化设计</strong>：moon-phase / starry-calendar / record-popup / pain-toolkit / poetic-prose / period-history 六个独立组件</li>
+                <li><strong>Canvas 2D API</strong>：实时渲染月相图形，支持动画过渡</li>
+            </ul>
+
+            <h3>开发背景</h3>
+            <p>该项目源于对女性健康科技（FemTech）领域的关注。市面上多数经期追踪类产品要么功能繁杂广告多，要么 UI 设计缺乏美感。月相日记试图用极简的设计语言和精确的算法，打造一个"好用且美丽"的替代方案。</p>
+
+            <p>项目完全由个人独立完成，包括产品设计、算法实现、UI 绘制和全部前端代码。目前仍在开发迭代中，计划后续提交微信审核上线。</p>
+        </div>
+
+        <aside class="showcase-sidebar">
+            <div class="sidebar-card">
+                <h4>项目信息</h4>
+                <div class="stat-row"><span class="stat-label">类型</span><span class="stat-value">微信小程序</span></div>
+                <div class="stat-row"><span class="stat-label">状态</span><span class="stat-value" style="color:#f39c12">开发中</span></div>
+                <div class="stat-row"><span class="stat-label">框架</span><span class="stat-value">原生 WXML/WXSS</span></div>
+                <div class="stat-row"><span class="stat-label">开发周期</span><span class="stat-value">持续迭代</span></div>
+                <div class="stat-row"><span class="stat-label">页面数</span><span class="stat-value">3 页 + 6 组件</span></div>
+                <div class="stat-row"><span class="stat-label">AppID</span><span class="stat-value">wxb55cd90...</span></div>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>快速链接</h4>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <a href="https://github.com/lzn956827063-create/moon-phase-journal" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;text-align:center">GitHub 仓库</a>
+                    <a href="/blog/moon-phase-journal-building" class="btn btn-glass" style="width:100%;text-align:center">阅读博客</a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}

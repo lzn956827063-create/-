@@ -140,6 +140,12 @@ def project_dataviz_dashboard():
     return render_template("projects/dataviz_dashboard.html")
 
 
+@main_bp.route("/projects/moon-phase-journal")
+def project_moon_phase_journal():
+    """月相日记 — 女性生理周期追踪微信小程序。"""
+    return render_template("projects/moon_phase_journal.html")
+
+
 # ======================================================================
 # AI Chat API (streaming chat for the AI chat page)
 # ======================================================================
