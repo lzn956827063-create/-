@@ -146,6 +146,12 @@ def project_moon_phase_journal():
     return render_template("projects/moon_phase_journal.html")
 
 
+@main_bp.route("/projects/codepilot")
+def project_codepilot():
+    """CodePilot — AI Agent 代码仓库分析助手，ReAct Agent 架构 + DeepSeek。"""
+    return render_template("projects/codepilot.html")
+
+
 # ======================================================================
 # AI Chat API (streaming chat for the AI chat page)
 # ======================================================================

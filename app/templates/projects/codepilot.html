@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% block title %}CodePilot — AI Agent 代码仓库分析助手{% endblock %}
+{% block description %}面向应届面试展示的全栈 AI Agent 项目：ReAct Agent 架构 + DeepSeek 大模型，AI 自主探索代码仓库，3 个专业 Agent 协同工作{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}">
+<style>
+.project-showcase {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--space-6);
+}
+
+.showcase-hero {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.showcase-hero .badge {
+    display: inline-block;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    padding: 4px 14px;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-hero h1 { font-size: var(--font-size-3xl); margin-bottom: var(--space-3); }
+.showcase-hero p { color: var(--color-text-secondary); max-width: 700px; margin: 0 auto; font-size: var(--font-size-lg); line-height: 1.8; }
+
+.tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-5);
+}
+
+.tech-tag {
+    padding: 6px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hero-links {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-5);
+    flex-wrap: wrap;
+}
+
+.showcase-body {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
+}
+
+.showcase-main h2 {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.showcase-main h3 {
+    font-size: var(--font-size-lg);
+    margin: var(--space-5) 0 var(--space-3);
+    color: var(--color-primary);
+}
+
+.showcase-main p {
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+    margin-bottom: var(--space-3);
+}
+
+.showcase-main ul {
+    color: var(--color-text-secondary);
+    line-height: 1.9;
+    padding-left: var(--space-5);
+    margin-bottom: var(--space-4);
+}
+
+.showcase-main ul li { margin-bottom: var(--space-1); }
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.feature-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
+.feature-item .f-icon { font-size: 1.4rem; margin-bottom: 6px; }
+.feature-item h4 { font-size: var(--font-size-base); margin-bottom: 4px; }
+.feature-item p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0; }
+
+/* Agent architecture diagram */
+.arch-diagram {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin: var(--space-4) 0;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 2;
+    overflow-x: auto;
+}
+
+.arch-diagram .highlight { color: var(--color-primary); font-weight: 600; }
+.arch-diagram .arrow { color: var(--color-text-muted); }
+
+/* Agent cards */
+.agent-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.agent-card h4 { margin-bottom: 4px; }
+.agent-card p { font-size: var(--font-size-sm); color: var(--color-text-muted); margin: 0; }
+
+/* Workflow steps */
+.workflow-steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin: var(--space-4) 0;
+}
+
+.workflow-steps li {
+    counter-increment: step;
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    position: relative;
+    padding-left: 52px;
+}
+
+.workflow-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 26px;
+    font-weight: 700;
+    font-size: var(--font-size-xs);
+}
+
+/* Sidebar */
+.showcase-sidebar {
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+}
+
+.sidebar-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.sidebar-card h4 {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-3);
+}
+
+.sidebar-card .stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+.sidebar-card .stat-row:last-child { border-bottom: none; }
+.sidebar-card .stat-label { color: var(--color-text-muted); }
+.sidebar-card .stat-value { color: var(--color-text); font-weight: 600; }
+
+/* Tool table */
+.tool-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--space-4) 0;
+    font-size: var(--font-size-sm);
+}
+
+.tool-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--color-bg);
+    border-bottom: 2px solid var(--color-border);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.tool-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+}
+
+.tool-table td:first-child {
+    font-family: var(--font-mono);
+    color: var(--color-primary);
+    font-size: var(--font-size-xs);
+}
+
+@media (max-width: 768px) {
+    .showcase-body { grid-template-columns: 1fr; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .showcase-hero h1 { font-size: var(--font-size-2xl); }
+    .arch-diagram { font-size: var(--font-size-xs); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="project-showcase">
+    <header class="showcase-hero">
+        <span class="badge">AI Agent Project</span>
+        <h1>CodePilot — AI Agent 代码仓库分析助手</h1>
+        <p>面向应届生简历展示的全栈 AI Agent 项目。用户上传 GitHub 仓库或 ZIP 项目后，系统使用 ReAct Agent 架构自主探索代码库，调用 DeepSeek 大模型进行智能分析。Agent 可以自主决策：搜索哪些代码、读取哪些文件、什么时候给出答案。</p>
+
+        <div class="tech-stack">
+            <span class="tech-tag">Python 3.12</span>
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Vue 3</span>
+            <span class="tech-tag">Element Plus</span>
+            <span class="tech-tag">Vite</span>
+            <span class="tech-tag">ReAct Agent</span>
+            <span class="tech-tag">DeepSeek</span>
+            <span class="tech-tag">Function Calling</span>
+            <span class="tech-tag">SQLAlchemy</span>
+            <span class="tech-tag">aiosqlite</span>
+            <span class="tech-tag">httpx</span>
+            <span class="tech-tag">GitPython</span>
+        </div>
+
+        <div class="hero-links">
+            <a href="https://github.com/lzn956827063-create/CodePilot" target="_blank" rel="noopener" class="btn btn-primary">GitHub 仓库 &rarr;</a>
+            <a href="/blog/codepilot-building" class="btn btn-glass">阅读博客</a>
+        </div>
+    </header>
+
+    <div class="showcase-body">
+        <div class="showcase-main">
+            <h2>项目概述</h2>
+            <p>CodePilot 的核心设计理念是 <strong>AI Agent 自主决策</strong>。传统 AI 问答是"固定上下文 + 大模型回答"，而 CodePilot 让 AI 像人类开发者一样<strong>边探索边回答</strong>：AI 先调用 <code>get_project_overview</code> 了解项目结构，再调用 <code>search_code</code> 搜索关键词，找到目标文件后用 <code>read_file</code> 深入阅读代码，在充分理解代码后才能给出精准答案。</p>
+
+            <p>项目共实现了 <strong>3 个专业 Agent</strong>，根据任务类型自动切换探索策略：</p>
+
+            <div class="agent-card">
+                <h4>&#128172; 智能问答 Agent（ReAct 循环）</h4>
+                <p>开放式答疑，用户可以问任意问题（"登录在哪？""用的是哪个 ORM？"）。Agent 最多执行 8 轮工具调用，前端实时展示每一步的思考过程。回答结构为三段式：&#128204; 结论 + &#128269; 关键发现 + &#128161; 补充建议。</p>
+            </div>
+
+            <div class="agent-card">
+                <h4>&#128270; 项目分析 Agent（探索 → 生成两阶段）</h4>
+                <p>先自由探索源码（入口文件、路由、数据模型、核心逻辑、配置文件），收集关键上下文；再调用 DeepSeek 生成固定 6 维度 JSON 报告：项目介绍、主要功能、技术栈、系统架构、核心模块、开发建议。结果持久化到数据库。</p>
+            </div>
+
+            <div class="agent-card">
+                <h4>&#128214; README 生成 Agent（探索 → 生成两阶段）</h4>
+                <p>专注文档化：探索安装命令、运行方式、功能说明、配置方法等"可复现"的信息，基于实际代码生成专业 README.md，杜绝编造内容。</p>
+            </div>
+
+            <h3>项目架构</h3>
+            <div class="arch-diagram">
+                <div><span class="highlight">Vue 3 前端</span> <span class="arrow">←→</span> <span class="highlight">FastAPI 后端</span> <span class="arrow">←→</span> <span class="highlight">DeepSeek API</span></div>
+                <div style="margin-top:12px;">
+                    <span class="highlight">API 层</span> <span class="arrow">→</span> <span class="highlight">Service 层</span> <span class="arrow">→</span> <span class="highlight">Agent 层</span> <span class="arrow">→</span> <span class="highlight">Tool Executor</span>
+                </div>
+                <div style="margin-top:12px; color: var(--color-text-muted);">
+                    Agent 循环：思考 → 调用工具 → 观察结果 → 再思考 → 给出答案<br>
+                    5 个工具：search_code / read_file / list_directory / read_config / get_project_overview
+                </div>
+            </div>
+
+            <h3>Agent 工作流程</h3>
+            <ol class="workflow-steps">
+                <li><strong>用户提问</strong>：比如"登录功能在哪里实现的？"</li>
+                <li><strong>Agent 思考</strong>：需要先了解项目结构</li>
+                <li><strong>调用工具</strong>：<code>get_project_overview()</code> → 获取目录树和技术栈</li>
+                <li><strong>观察结果</strong>：发现项目有 auth 目录</li>
+                <li><strong>继续探索</strong>：<code>search_code("login")</code> → 搜索相关文件</li>
+                <li><strong>深入阅读</strong>：<code>read_file("app/auth/routes.py")</code> → 确认具体实现</li>
+                <li><strong>给出答案</strong>：信息足够，生成结构化回答（文件路径 + 关键代码 + 说明）</li>
+            </ol>
+
+            <h3>Agent 工具集</h3>
+            <table class="tool-table">
+                <thead><tr><th>工具名称</th><th>功能</th><th>关键参数</th></tr></thead>
+                <tbody>
+                    <tr><td>get_project_overview</td><td>获取项目全局信息（目录树、技术栈、统计）</td><td>无参数</td></tr>
+                    <tr><td>search_code</td><td>按关键词搜索代码，返回匹配文件+行数+上下文片段</td><td>keyword, file_pattern</td></tr>
+                    <tr><td>read_file</td><td>读取指定文件，支持起止行号，路径穿越防护</td><td>file_path, start_line, end_line</td></tr>
+                    <tr><td>list_directory</td><td>列出目录内容（文件和子目录）</td><td>path</td></tr>
+                    <tr><td>read_config</td><td>读取项目配置文件摘要（依赖清单、技术栈）</td><td>无参数</td></tr>
+                </tbody>
+            </table>
+
+            <h3>核心功能</h3>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="f-icon">&#128193;</div>
+                    <h4>项目上传与扫描</h4>
+                    <p>支持 GitHub URL（GitPython clone）和 ZIP 上传，os.walk 扫描生成目录树、统计代码量、自动识别 60+ 技术栈。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#129504;</div>
+                    <h4>ReAct Agent 循环</h4>
+                    <p>AI 自主决策调用 5 个工具探索代码库，最多 8 轮。非写死流程，Agent 根据每次结果动态决定下一步。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128736;</div>
+                    <h4>Function Calling 原生支持</h4>
+                    <p>基于 DeepSeek 原生 Function Calling 能力，零额外框架依赖（无 LangChain）。工具定义遵循 OpenAI 标准格式。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128202;</div>
+                    <h4>六维度 AI 分析</h4>
+                    <p>自动生成项目介绍 / 主要功能 / 技术栈 / 系统架构 / 核心模块 / 开发建议，结果持久化存储。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128209;</div>
+                    <h4>实时工具调用展示</h4>
+                    <p>前端实时渲染 Agent 的每一步工具调用（名称、参数、返回结果），让用户看到 AI 的思考过程。</p>
+                </div>
+                <div class="feature-item">
+                    <div class="f-icon">&#128214;</div>
+                    <h4>README 自动生成</h4>
+                    <p>AI 自主探索源码后生成专业 README.md，支持在线预览和下载。所有信息基于实际代码，不编造。</p>
+                </div>
+            </div>
+
+            <h3>技术亮点</h3>
+            <ul>
+                <li><strong>ReAct Agent 架构</strong>：Thought → Action → Observation 循环，AI 根据每次观察结果动态决策下一步，非写死工作流</li>
+                <li><strong>Function Calling 零依赖</strong>：直接使用 DeepSeek 原生 Function Calling API（OpenAI 兼容格式），不依赖 LangChain 等重框架</li>
+                <li><strong>模块化设计</strong>：api / service / parser / ai / agent 五层分离，Agent 层通过抽象的工具接口与业务层解耦</li>
+                <li><strong>异步全链路</strong>：FastAPI + httpx + aiosqlite 全异步，Agent 循环中多次 API 调用不阻塞其他请求</li>
+                <li><strong>安全机制</strong>：路径穿越防护（所有文件操作限制在项目目录内）、文件大小/类型过滤、DeepSeek 响应 Unicode 清理</li>
+                <li><strong>探索-生成两阶段</strong>：分析 Agent 和 README Agent 采用统一的 Phase 1（自由探索）+ Phase 2（结构化输出）模式，可复用为基类</li>
+            </ul>
+
+            <h3>API 接口设计</h3>
+            <table class="tool-table">
+                <thead><tr><th>方法</th><th>路径</th><th>说明</th></tr></thead>
+                <tbody>
+                    <tr><td>POST</td><td>/api/upload</td><td>上传 GitHub 仓库</td></tr>
+                    <tr><td>POST</td><td>/api/upload/zip</td><td>上传 ZIP 项目</td></tr>
+                    <tr><td>GET</td><td>/api/projects</td><td>项目列表</td></tr>
+                    <tr><td>GET</td><td>/api/project/{id}</td><td>项目详情 + 分析 + 问答历史</td></tr>
+                    <tr><td>POST</td><td>/api/analyze</td><td>触发 AI 分析（AnalysisAgent）</td></tr>
+                    <tr><td>POST</td><td>/api/chat</td><td>Agent 代码问答（AgentLoop ReAct）</td></tr>
+                    <tr><td>POST</td><td>/api/generate-readme</td><td>生成 README（ReadmeAgent）</td></tr>
+                    <tr><td>GET</td><td>/api/project/{id}/readme/download</td><td>下载 README</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <aside class="showcase-sidebar">
+            <div class="sidebar-card">
+                <h4>项目信息</h4>
+                <div class="stat-row"><span class="stat-label">类型</span><span class="stat-value">全栈 AI Agent</span></div>
+                <div class="stat-row"><span class="stat-label">状态</span><span class="stat-value" style="color:#20bf6b">已完成</span></div>
+                <div class="stat-row"><span class="stat-label">Agent 数量</span><span class="stat-value">3 个</span></div>
+                <div class="stat-row"><span class="stat-label">工具数量</span><span class="stat-value">5 个</span></div>
+                <div class="stat-row"><span class="stat-label">代码量</span><span class="stat-value">~2500 行</span></div>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>快速链接</h4>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <a href="https://github.com/lzn956827063-create/CodePilot" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;text-align:center">GitHub 仓库</a>
+                    <a href="/blog/codepilot-building" class="btn btn-glass" style="width:100%;text-align:center">阅读博客</a>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>升级路径</h4>
+                <div style="font-size:var(--font-size-sm);color:var(--color-text-muted);line-height:1.8;">
+                    <p style="margin-bottom:8px;">项目 README 列出的后续方向：</p>
+                    <ul style="padding-left:16px;margin:0;">
+                        <li>RAG + 向量数据库升级语义搜索</li>
+                        <li>LangGraph 多 Agent 编排</li>
+                        <li>安全/性能/架构多 Agent 协作</li>
+                        <li>MCP Server 暴露工具协议</li>
+                        <li>Docker 容器化部署</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </div>
+</section>
+{% endblock %}
